@@ -2,6 +2,7 @@ package com.google.mediapipe.examples.poselandmarker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Gallery
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -10,7 +11,7 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
 import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
 
-class VideoCameraActivity : AppCompatActivity() {
+class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
     private lateinit var fragmentManager: FragmentManager
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,6 +22,7 @@ class VideoCameraActivity : AppCompatActivity() {
 
         val cameraFragment = CameraFragment()
         val galleryFragment = GalleryFragment()
+
 
         val videoFragmentLayout = findViewById<ConstraintLayout>(R.id.videoFragmentLayout)
         val cameraFragmentLayout = findViewById<ConstraintLayout>(R.id.cameraFragmentLayout)
@@ -33,5 +35,13 @@ class VideoCameraActivity : AppCompatActivity() {
         val transaction: FragmentTransaction = fragmentManager.beginTransaction()
         transaction.replace(id, fragment)
         transaction.commit()
+    }
+
+    override fun transferVideoLandmarkVector(landmarkVector: LandmarkVector?) {
+        Log.i("VideoVector", landmarkVector.toString())
+    }
+
+    override fun transferLivestreamLandmarkVector(landmarkVector: LandmarkVector?) {
+        Log.i("LivestreamVector", landmarkVector.toString())
     }
 }

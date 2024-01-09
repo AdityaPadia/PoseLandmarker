@@ -35,10 +35,13 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.Navigation
+import com.google.mediapipe.examples.poselandmarker.DataTransfer
+import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCameraBinding
+import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.Locale
 import java.util.concurrent.ExecutorService
@@ -373,12 +376,37 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             fragmentCameraBinding.viewFinder.display.rotation
     }
 
+    //Function that takes two joint indexes as input and returns the vector between them
+    private fun returnLivestreamVector(
+        landmarkIndex1: Int,
+        landmarkIndex2: Int,
+        landmarkList: List<Landmark>
+    ): LandmarkVector? {
+        val landmark1 = landmarkList[landmarkIndex1]
+        val landmark2 = landmarkList[landmarkIndex2]
+
+        return LandmarkVector(
+            landmark1.x() - landmark2.x(),
+            landmark1.y() - landmark2.y(),
+            landmark1.z() - landmark2.z()
+        )
+    }
+
     // Update UI after pose have been detected. Extracts original
     // image height/width to scale and place the landmarks properly through
     // OverlayView
     override fun onResults(
         resultBundle: PoseLandmarkerHelper.ResultBundle
     ) {
+
+        val dataTransferInterface : DataTransfer = activity as DataTransfer
+
+        if (resultBundle.results[0].landmarks().isNotEmpty()){
+            //Can access livestream landmarks here
+            val livestreamVector = this.returnLivestreamVector(13, 15, resultBundle.results[0].worldLandmarks()[0])
+            dataTransferInterface.transferLivestreamLandmarkVector(livestreamVector)
+        }
+
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =

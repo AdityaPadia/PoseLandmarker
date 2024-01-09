@@ -26,6 +26,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
+import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -36,7 +37,8 @@ class PoseLandmarkerHelper(
     var minPoseDetectionConfidence: Float = DEFAULT_POSE_DETECTION_CONFIDENCE,
     var minPoseTrackingConfidence: Float = DEFAULT_POSE_TRACKING_CONFIDENCE,
     var minPosePresenceConfidence: Float = DEFAULT_POSE_PRESENCE_CONFIDENCE,
-    var currentModel: Int = MODEL_POSE_LANDMARKER_FULL,
+    // Change the model being used - lite (fastest results)
+    var currentModel: Int = MODEL_POSE_LANDMARKER_LITE,
     var currentDelegate: Int = DELEGATE_CPU,
     var runningMode: RunningMode = RunningMode.IMAGE,
     val context: Context,
@@ -300,7 +302,6 @@ class PoseLandmarkerHelper(
             Log.i("inferenceTimePerFrameMs", inferenceTimePerFrameMs.toString())
             Log.i("resultBundle", resultBundle.toString())
             return resultBundle
-//            return ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
         }
     }
 
@@ -341,6 +342,21 @@ class PoseLandmarkerHelper(
         return null
     }
 
+    private fun returnLivestreamVector(
+        landmarkIndex1: Int,
+        landmarkIndex2: Int,
+        landmarkList: List<Landmark>
+    ): LandmarkVector {
+        val landmark1 = landmarkList[landmarkIndex1]
+        val landmark2 = landmarkList[landmarkIndex2]
+
+        return LandmarkVector(
+            landmark1.x() - landmark2.x(),
+            landmark1.y() - landmark2.y(),
+            landmark1.z() - landmark2.z()
+        )
+    }
+
     // Return the landmark result to this PoseLandmarkerHelper's caller
     private fun returnLivestreamResult(
         result: PoseLandmarkerResult,
@@ -349,7 +365,11 @@ class PoseLandmarkerHelper(
         val finishTimeMs = SystemClock.uptimeMillis()
         val inferenceTime = finishTimeMs - result.timestampMs()
 
-        Log.i("result", result.toString())
+        // Display Results from Livestream
+        if (result.worldLandmarks().size != 0) {
+            val livestreamVector = returnLivestreamVector(13, 15, result.worldLandmarks()[0])
+        }
+
 
         poseLandmarkerHelperListener?.onResults(
             ResultBundle(

@@ -31,14 +31,19 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.mediapipe.examples.poselandmarker.DataTransfer
+import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
+import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import kotlin.math.acos
+import kotlin.math.sqrt
 
 class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -53,6 +58,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         get() = _fragmentGalleryBinding!!
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
+
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ScheduledExecutorService
@@ -83,6 +89,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     ): View {
         _fragmentGalleryBinding =
             FragmentGalleryBinding.inflate(inflater, container, false)
+
 
         return fragmentGalleryBinding.root
     }
@@ -341,6 +348,53 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
+    private fun unitVector(landmark : Landmark) : LandmarkVector {
+        val x = landmark.x()
+        val y = landmark.y()
+        val z = landmark.z()
+
+        val magnitude = sqrt(x*x + y*y + z*z)
+
+        val normalizedX = x/magnitude
+        val normalizedY = y/magnitude
+        val normalizedZ = z/magnitude
+
+        return LandmarkVector(normalizedX, normalizedY, normalizedZ)
+    }
+
+    private fun LandmarkVector.dot(other: LandmarkVector) : Float {
+        return x * other.x + y * other.y + z * other.z
+    }
+
+    private fun angleBetweenRadians(landmark1 : Landmark, landmark2 : Landmark) : Float {
+
+        //Normalize the vectors
+        val unitVectorLandmark1 = unitVector(landmark1)
+        val unitVectorLandmark2 = unitVector(landmark2)
+
+        val dotProduct =unitVectorLandmark1.dot(unitVectorLandmark2).coerceIn(-1.0f, 1.0f)
+        return acos(dotProduct)
+    }
+
+    //Function that returns the angle of a joint during video
+     private fun returnVideoVector(
+        landmarkIndex1: Int,
+        landmarkIndex2: Int,
+        landmarkList: List<Landmark>
+    ): LandmarkVector {
+//        Log.i("Landmark List", landmarkList.toString())
+
+        val landmark1 = landmarkList[landmarkIndex1]
+        val landmark2 = landmarkList[landmarkIndex2]
+
+        return LandmarkVector(
+            landmark1.x() - landmark2.x(),
+            landmark1.y() - landmark2.y(),
+            landmark1.z() - landmark2.z()
+        )
+
+    }
+
     // Setup and display the video.
     private fun displayVideoResult(result: PoseLandmarkerHelper.ResultBundle) {
 
@@ -362,6 +416,15 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         // The video playback has finished so we stop drawing bounding boxes
                         backgroundExecutor.shutdown()
                     } else {
+
+                        val dataTransferInterface : DataTransfer = activity as DataTransfer
+                        if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
+                        {
+
+                            val videoVector = returnVideoVector(13,15, result.results[resultIndex].worldLandmarks()[0])
+//                            Log.i("videoVector", videoVector.toString())
+                            dataTransferInterface.transferVideoLandmarkVector(videoVector)
+                        }
                         fragmentGalleryBinding.overlay.setResults(
                             result.results[resultIndex],
                             result.inputImageHeight,
