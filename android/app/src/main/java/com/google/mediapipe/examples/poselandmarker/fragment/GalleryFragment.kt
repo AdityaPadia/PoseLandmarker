@@ -348,33 +348,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
-    private fun unitVector(landmark : Landmark) : LandmarkVector {
-        val x = landmark.x()
-        val y = landmark.y()
-        val z = landmark.z()
-
-        val magnitude = sqrt(x*x + y*y + z*z)
-
-        val normalizedX = x/magnitude
-        val normalizedY = y/magnitude
-        val normalizedZ = z/magnitude
-
-        return LandmarkVector(normalizedX, normalizedY, normalizedZ)
-    }
-
-    private fun LandmarkVector.dot(other: LandmarkVector) : Float {
-        return x * other.x + y * other.y + z * other.z
-    }
-
-    private fun angleBetweenRadians(landmark1 : Landmark, landmark2 : Landmark) : Float {
-
-        //Normalize the vectors
-        val unitVectorLandmark1 = unitVector(landmark1)
-        val unitVectorLandmark2 = unitVector(landmark2)
-
-        val dotProduct =unitVectorLandmark1.dot(unitVectorLandmark2).coerceIn(-1.0f, 1.0f)
-        return acos(dotProduct)
-    }
 
     //Function that returns the angle of a joint during video
      private fun returnVideoVector(

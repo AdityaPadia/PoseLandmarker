@@ -10,10 +10,15 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
 import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
+import com.google.mediapipe.tasks.components.containers.Landmark
+import kotlin.math.acos
+import kotlin.math.sqrt
 
 class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
     private lateinit var fragmentManager: FragmentManager
+    private var videoVector : LandmarkVector? = null
+    private var livestreamVector : LandmarkVector? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_camera)
@@ -37,11 +42,59 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         transaction.commit()
     }
 
+    private fun unitVector(landmark : LandmarkVector?) : LandmarkVector {
+
+        if (landmark == null)
+        {
+            return LandmarkVector(0f,0f,0f)
+        }
+
+        val x = landmark.x
+        val y = landmark.y
+        val z = landmark.z
+
+        val magnitude = sqrt(x*x + y*y + z*z)
+
+        val normalizedX = x/magnitude
+        val normalizedY = y/magnitude
+        val normalizedZ = z/magnitude
+
+        return LandmarkVector(normalizedX, normalizedY, normalizedZ)
+    }
+
+    private fun LandmarkVector.dot(other: LandmarkVector) : Float {
+        return x * other.x + y * other.y + z * other.z
+    }
+
+    fun radiansToDegrees(radians: Float): Float {
+        return Math.toDegrees(radians.toDouble()).toFloat()
+    }
+
+    private fun angleBetweenRadians() : Float {
+
+        //Normalize the vectors
+        val unitVideoVector = unitVector(videoVector)
+        val unitLivestreamVector = unitVector(livestreamVector)
+
+        val dotProduct =unitVideoVector.dot(unitLivestreamVector).coerceIn(-1.0f, 1.0f)
+        val angleRadians = acos(dotProduct)
+        val angleDegrees: Float = radiansToDegrees(angleRadians)
+        Log.i("Angle Degrees", angleDegrees.toString())
+        return angleRadians
+    }
+
+
+
     override fun transferVideoLandmarkVector(landmarkVector: LandmarkVector?) {
-        Log.i("VideoVector", landmarkVector.toString())
+//        Log.i("VideoVector", landmarkVector.toString())
+        //Set values
+        videoVector = landmarkVector
+        val angleRadians = angleBetweenRadians()
     }
 
     override fun transferLivestreamLandmarkVector(landmarkVector: LandmarkVector?) {
-        Log.i("LivestreamVector", landmarkVector.toString())
+//        Log.i("LivestreamVector", landmarkVector.toString())
+        livestreamVector = landmarkVector
+        val angleRadians = angleBetweenRadians()
     }
 }
