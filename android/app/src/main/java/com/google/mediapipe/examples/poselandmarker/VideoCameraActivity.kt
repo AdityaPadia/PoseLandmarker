@@ -22,14 +22,16 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
     private var videoVectorList = mutableListOf<LandmarkVector?>()
     private var livestreamVectorList = mutableListOf<LandmarkVector?>()
 
+    private val cameraFragment = CameraFragment()
+    private val galleryFragment = GalleryFragment()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_camera)
 
         fragmentManager = supportFragmentManager
 
-        val cameraFragment = CameraFragment()
-        val galleryFragment = GalleryFragment()
+
 
         val videoFragmentLayout = findViewById<ConstraintLayout>(R.id.videoFragmentLayout)
         val cameraFragmentLayout = findViewById<ConstraintLayout>(R.id.cameraFragmentLayout)
@@ -107,14 +109,9 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
                 angleDegreeList.add(angleDegrees)
 
-                //Use UI Thread for real-time UI updates
-                this.runOnUiThread {
-                    val tvAngle = findViewById<TextView>(R.id.tvAngle)
-                    tvAngle.text = angleDegrees.toString()
-
-                }
             }
 
+            cameraFragment.setAngleList(angleDegreeList)
             return angleDegreeList
         }
 
@@ -148,7 +145,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         }
 
         livestreamVectorList = newLivestreamVectorList
-        Log.i("livestreamVectorList", livestreamVectorList.toString())
+//        Log.i("livestreamVectorList", livestreamVectorList.toString())
 
         val angleRadians = angleBetweenDegrees()
 

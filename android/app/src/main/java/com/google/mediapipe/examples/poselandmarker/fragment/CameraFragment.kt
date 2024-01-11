@@ -68,6 +68,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
     private var jointPairsList = listOf<Pair<Int, Int>>()
+    private var angleList = listOf<Float>()
 
 
     /** Blocking ML operations are performed using this executor */
@@ -389,6 +390,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 //        }
     }
 
+    fun setAngleList(jointAngleList : List<Float>) {
+        angleList = jointAngleList
+//        Log.i("angleList", angleList.toString())
+    }
+
     //Function that takes two joint indexes as input and returns the vector between them
     private fun returnLivestreamVector(
         landmarkIndex1: Int,
@@ -434,6 +440,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             if (_fragmentCameraBinding != null) {
 
                 fragmentCameraBinding.overlay.setJointList(jointPairsList)
+
+                if (angleList.isNotEmpty()) {
+                    fragmentCameraBinding.overlay.setAngleList(angleList)
+                }
 
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
                     String.format("%d ms", resultBundle.inferenceTime)

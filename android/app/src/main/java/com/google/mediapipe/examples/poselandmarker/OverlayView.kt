@@ -41,6 +41,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var imageHeight: Int = 1
 
     private var jointPairsList = listOf<Pair<Int, Int>>()
+    private var jointAngleList = listOf<Float>()
 
     init {
         initPaints()
@@ -94,18 +95,36 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                     if (jointPairsList.isNotEmpty())
                     {
-                        Log.i("jointPairsList", jointPairsList.toString())
+//                        Log.i("jointPairsList", jointPairsList.toString())
                         var isFound = false;
+                        var index = -1;
 
-                        for (jointPair in jointPairsList) {
-                            if ((jointPair.first == start && jointPair.second == end)) {
+                        for (i in jointPairsList.indices) {
+                            if ((jointPairsList[i].first == start && jointPairsList[i].second == end)) {
                                 isFound = true;
+                                index = i
                                 break;
                             }
                         }
 
-                        if (isFound) {
-                            linePaint.color = yellowColor
+//                        for (jointPair in jointPairsList) {
+//                            if ((jointPair.first == start && jointPair.second == end)) {
+//                                isFound = true;
+//                                break;
+//                            }
+//                        }
+
+                        if (isFound && jointAngleList.isNotEmpty()) {
+                            val angle = jointAngleList[index]
+                            if (angle < 30) {
+                                linePaint.color = blueColor
+                            }
+                            else if (angle >= 30 && angle < 60) {
+                                linePaint.color = yellowColor
+                            }
+                            else if (angle >= 60) {
+                                linePaint.color = redColor
+                            }
                         }
                         else {
                             linePaint.color = blueColor
@@ -129,8 +148,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             linePaint)
                     }
 
-
-
                 }
             }
         }
@@ -138,6 +155,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     fun setJointList(jointPairs : List<Pair<Int, Int>>) {
         jointPairsList = jointPairs
+    }
+
+    fun setAngleList(angleList : List<Float>) {
+        jointAngleList = angleList
+        Log.i("angleList", jointAngleList.toString())
     }
 
     fun setResults(
