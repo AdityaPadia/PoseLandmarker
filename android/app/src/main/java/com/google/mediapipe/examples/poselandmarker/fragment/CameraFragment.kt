@@ -39,6 +39,7 @@ import com.google.mediapipe.examples.poselandmarker.DataTransfer
 import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
+import com.google.mediapipe.examples.poselandmarker.OverlayView
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
@@ -66,6 +67,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraFacing = CameraSelector.LENS_FACING_BACK
+    private var jointPairsList = listOf<Pair<Int, Int>>()
+
 
     /** Blocking ML operations are performed using this executor */
     private lateinit var backgroundExecutor: ExecutorService
@@ -376,6 +379,16 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             fragmentCameraBinding.viewFinder.display.rotation
     }
 
+    fun setJointList(jointPairs : List<Pair<Int, Int>>) {
+        jointPairsList = jointPairs
+        Log.i("jointPairsList", jointPairsList.toString())
+
+        //ERROR fragmentCameraBinding is null
+//        if (_fragmentCameraBinding != null) {
+//
+//        }
+    }
+
     //Function that takes two joint indexes as input and returns the vector between them
     private fun returnLivestreamVector(
         landmarkIndex1: Int,
@@ -402,13 +415,25 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val dataTransferInterface : DataTransfer = activity as DataTransfer
 
         if (resultBundle.results[0].landmarks().isNotEmpty()){
-            //Can access livestream landmarks here
-            val livestreamVector = this.returnLivestreamVector(13, 15, resultBundle.results[0].worldLandmarks()[0])
-            dataTransferInterface.transferLivestreamLandmarkVector(livestreamVector)
+
+            //Iterate through each joint pair
+            for (pair in jointPairsList)
+            {
+                val landmark1 = pair.first
+                val landmark2 = pair.second
+
+                //Can access livestream landmarks here
+                val livestreamVector = this.returnLivestreamVector(landmark1, landmark2, resultBundle.results[0].worldLandmarks()[0])
+                dataTransferInterface.transferLivestreamLandmarkVector(livestreamVector)
+
+            }
         }
 
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
+
+                fragmentCameraBinding.overlay.setJointList(jointPairsList)
+
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
                     String.format("%d ms", resultBundle.inferenceTime)
 

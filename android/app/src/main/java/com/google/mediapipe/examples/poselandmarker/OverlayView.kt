@@ -20,6 +20,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -39,6 +40,8 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var imageWidth: Int = 1
     private var imageHeight: Int = 1
 
+    private var jointPairsList = listOf<Pair<Int, Int>>()
+
     init {
         initPaints()
     }
@@ -52,8 +55,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     private fun initPaints() {
+        val blueColor = ContextCompat.getColor(context!!, R.color.mp_color_primary)
+        val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
+        val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
+
         linePaint.color =
-            ContextCompat.getColor(context!!, R.color.mp_color_primary)
+            blueColor
         linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
         linePaint.style = Paint.Style.STROKE
 
@@ -64,8 +71,14 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
+
+        val blueColor = ContextCompat.getColor(context!!, R.color.mp_color_primary)
+        val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
+        val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
+
         results?.let { poseLandmarkerResult ->
             for(landmark in poseLandmarkerResult.landmarks()) {
+
                 for(normalizedLandmark in landmark) {
                     canvas.drawPoint(
                         normalizedLandmark.x() * imageWidth * scaleFactor,
@@ -75,15 +88,48 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 }
 
                 PoseLandmarker.POSE_LANDMARKS.forEach {
-                    canvas.drawLine(
-                        poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
-                        poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
-                        linePaint)
+
+                    val start = it.start()
+                    val end = it.end()
+
+                    Log.i("jointPairsList", jointPairsList.toString())
+
+                    if (jointPairsList.isNotEmpty())
+                    {
+                        for (jointPair in jointPairsList) {
+                            if (jointPair.first == start && jointPair.second == end)
+                            {
+                                linePaint.color = yellowColor
+                            }
+                            canvas.drawLine(
+                                poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                                poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                                poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                                poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                                linePaint)
+
+                            linePaint.color = blueColor
+                        }
+                    }
+                    else
+                    {
+                        canvas.drawLine(
+                            poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                            linePaint)
+                    }
+
+
+
                 }
             }
         }
+    }
+
+    fun setJointList(jointPairs : List<Pair<Int, Int>>) {
+        jointPairsList = jointPairs
     }
 
     fun setResults(

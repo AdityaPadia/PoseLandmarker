@@ -58,6 +58,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         get() = _fragmentGalleryBinding!!
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
+    private var jointPairsList = listOf<Pair<Int, Int>>()
 
 
     /** Blocking ML operations are performed using this executor */
@@ -348,6 +349,10 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
+    fun setJointList(jointPairs : List<Pair<Int, Int>>) {
+        jointPairsList = jointPairs
+        Log.i("jointList", jointPairsList.toString())
+    }
 
     //Function that returns the angle of a joint during video
      private fun returnVideoVector(
@@ -394,9 +399,13 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
                         {
 
-                            val videoVector = returnVideoVector(13,15, result.results[resultIndex].worldLandmarks()[0])
-//                            Log.i("videoVector", videoVector.toString())
-                            dataTransferInterface.transferVideoLandmarkVector(videoVector)
+                            for (pair in jointPairsList) {
+                                val landmark1 = pair.first
+                                val landmark2 = pair.second
+                                val videoVector = returnVideoVector(13,15, result.results[resultIndex].worldLandmarks()[0])
+                                dataTransferInterface.transferVideoLandmarkVector(videoVector)
+                            }
+
                         }
                         fragmentGalleryBinding.overlay.setResults(
                             result.results[resultIndex],
