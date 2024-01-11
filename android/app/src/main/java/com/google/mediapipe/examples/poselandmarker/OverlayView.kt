@@ -92,24 +92,32 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                     val start = it.start()
                     val end = it.end()
 
-                    Log.i("jointPairsList", jointPairsList.toString())
-
                     if (jointPairsList.isNotEmpty())
                     {
-                        for (jointPair in jointPairsList) {
-                            if (jointPair.first == start && jointPair.second == end)
-                            {
-                                linePaint.color = yellowColor
-                            }
-                            canvas.drawLine(
-                                poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
-                                poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
-                                poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
-                                poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
-                                linePaint)
+                        Log.i("jointPairsList", jointPairsList.toString())
+                        var isFound = false;
 
+                        for (jointPair in jointPairsList) {
+                            if ((jointPair.first == start && jointPair.second == end)) {
+                                isFound = true;
+                                break;
+                            }
+                        }
+
+                        if (isFound) {
+                            linePaint.color = yellowColor
+                        }
+                        else {
                             linePaint.color = blueColor
                         }
+
+                        canvas.drawLine(
+                            poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                            linePaint)
+
                     }
                     else
                     {

@@ -299,8 +299,20 @@ class PoseLandmarkerHelper(
             return null
         } else {
             val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
-            Log.i("inferenceTimePerFrameMs", inferenceTimePerFrameMs.toString())
-            Log.i("resultBundle", resultBundle.toString())
+//            Log.i("inferenceTimePerFrameMs", inferenceTimePerFrameMs.toString())
+
+//            val veryLongString = resultBundle.toString()
+//            val maxLogSize = 1000
+//
+//            //Printing the resultBundle
+//            for (i in 0..veryLongString.length / maxLogSize) {
+//                val start: Int = i * maxLogSize
+//                var end: Int = (i + 1) * maxLogSize
+//                end = if (end > veryLongString.length) veryLongString.length else end
+//                Log.v("resultBundle", veryLongString.substring(start, end))
+//            }
+
+//            Log.i("resultBundle", resultBundle.toString())
             return resultBundle
         }
     }

@@ -42,8 +42,6 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import kotlin.math.acos
-import kotlin.math.sqrt
 
 class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -339,6 +337,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentGalleryBinding.progress.visibility = View.VISIBLE
             }
 
+
             poseLandmarkerHelper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
                 ?.let { resultBundle ->
                     activity?.runOnUiThread { displayVideoResult(resultBundle) }
@@ -398,15 +397,17 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         val dataTransferInterface : DataTransfer = activity as DataTransfer
                         if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
                         {
+                            val videoVectorList = mutableListOf<LandmarkVector>()
 
                             for (pair in jointPairsList) {
                                 val landmark1 = pair.first
                                 val landmark2 = pair.second
-                                val videoVector = returnVideoVector(13,15, result.results[resultIndex].worldLandmarks()[0])
-                                dataTransferInterface.transferVideoLandmarkVector(videoVector)
+                                val videoVector = returnVideoVector(landmark1,landmark2, result.results[resultIndex].worldLandmarks()[0])
+                                videoVectorList.add(videoVector)
                             }
-
+                            dataTransferInterface.transferVideoLandmarkVector(videoVectorList)
                         }
+
                         fragmentGalleryBinding.overlay.setResults(
                             result.results[resultIndex],
                             result.inputImageHeight,

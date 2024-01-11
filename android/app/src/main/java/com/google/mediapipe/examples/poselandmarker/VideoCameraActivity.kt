@@ -19,8 +19,8 @@ import kotlin.math.sqrt
 class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
     private lateinit var fragmentManager: FragmentManager
-    private var videoVector : LandmarkVector? = null
-    private var livestreamVector : LandmarkVector? = null
+    private var videoVectorList = mutableListOf<LandmarkVector?>()
+    private var livestreamVectorList = mutableListOf<LandmarkVector?>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +37,8 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
         //Pair of relevant joint IDs that need to be monitored
         val pairs = listOf(
-            Pair(13, 15)
+            Pair(13, 15),
+            Pair(14, 16)
         )
 
         Log.i("Pairs", pairs.toString())
@@ -84,37 +85,74 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         return Math.toDegrees(radians.toDouble()).toFloat()
     }
 
-    private fun angleBetweenRadians() : Float {
+    private fun angleBetweenDegrees() : List<Float> {
 
-        //Normalize the vectors
-        val unitVideoVector = unitVector(videoVector)
-        val unitLivestreamVector = unitVector(livestreamVector)
 
-        val dotProduct =unitVideoVector.dot(unitLivestreamVector).coerceIn(-1.0f, 1.0f)
-        val angleRadians = acos(dotProduct)
-        val angleDegrees: Float = radiansToDegrees(angleRadians)
-//        Log.i("Angle Degrees", angleDegrees.toString())
 
-        //Use UI Thread for real-time UI updates
-        this.runOnUiThread {
-            val tvAngle = findViewById<TextView>(R.id.tvAngle)
-            tvAngle.text = angleDegrees.toString()
+        if (videoVectorList.isNotEmpty() && livestreamVectorList.isNotEmpty())
+        {
+            val angleDegreeList = mutableListOf<Float>()
 
+            for (vector in 0 until videoVectorList.size) {
+                val videoVector = videoVectorList[vector] //Only use when video exists
+                val livestreamVector = livestreamVectorList[vector]
+
+                //Normalize the vectors
+                val unitVideoVector = unitVector(videoVector)
+                val unitLivestreamVector = unitVector(livestreamVector)
+
+                val dotProduct =unitVideoVector.dot(unitLivestreamVector).coerceIn(-1.0f, 1.0f)
+                val angleRadians = acos(dotProduct)
+                val angleDegrees: Float = radiansToDegrees(angleRadians)
+
+                angleDegreeList.add(angleDegrees)
+
+                //Use UI Thread for real-time UI updates
+                this.runOnUiThread {
+                    val tvAngle = findViewById<TextView>(R.id.tvAngle)
+                    tvAngle.text = angleDegrees.toString()
+
+                }
+            }
+
+            return angleDegreeList
         }
 
-        return angleRadians
+        return mutableListOf()
     }
 
-    override fun transferVideoLandmarkVector(landmarkVector: LandmarkVector?) {
+    override fun transferVideoLandmarkVector(landmarkVectorList: List<LandmarkVector?>) {
 //        Log.i("VideoVector", landmarkVector.toString())
+
         //Set values
-        videoVector = landmarkVector
-        val angleRadians = angleBetweenRadians()
+        val newVideoVectorList = mutableListOf<LandmarkVector?>()
+
+        for (landmarkVector in landmarkVectorList) {
+//            val videoVector = landmarkVector
+            newVideoVectorList.add(landmarkVector)
+        }
+
+        videoVectorList = newVideoVectorList
+        Log.i("videoVectorList", videoVectorList.toString())
+        val angleDegrees = angleBetweenDegrees()
     }
 
-    override fun transferLivestreamLandmarkVector(landmarkVector: LandmarkVector?) {
+    override fun transferLivestreamLandmarkVector(landmarkVectorList: List<LandmarkVector?>) {
 //        Log.i("LivestreamVector", landmarkVector.toString())
-        livestreamVector = landmarkVector
-        val angleRadians = angleBetweenRadians()
+
+        //Set Values
+        val newLivestreamVectorList = mutableListOf<LandmarkVector?>()
+
+        for (landmarkVector in landmarkVectorList) {
+            newLivestreamVectorList.add(landmarkVector)
+        }
+
+        livestreamVectorList = newLivestreamVectorList
+        Log.i("livestreamVectorList", livestreamVectorList.toString())
+
+        val angleRadians = angleBetweenDegrees()
+
+//        livestreamVector = landmarkVector
+//        val angleRadians = angleBetweenRadians()
     }
 }

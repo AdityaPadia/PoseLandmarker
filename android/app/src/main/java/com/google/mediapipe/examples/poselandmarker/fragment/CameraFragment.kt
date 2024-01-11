@@ -413,6 +413,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     ) {
 
         val dataTransferInterface : DataTransfer = activity as DataTransfer
+        val livestreamVectorList = mutableListOf<LandmarkVector?>()
 
         if (resultBundle.results[0].landmarks().isNotEmpty()){
 
@@ -424,9 +425,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                 //Can access livestream landmarks here
                 val livestreamVector = this.returnLivestreamVector(landmark1, landmark2, resultBundle.results[0].worldLandmarks()[0])
-                dataTransferInterface.transferLivestreamLandmarkVector(livestreamVector)
-
+                livestreamVectorList.add(livestreamVector)
             }
+            dataTransferInterface.transferLivestreamLandmarkVector(livestreamVectorList)
         }
 
         activity?.runOnUiThread {
