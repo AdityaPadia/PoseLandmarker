@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "531022885638",
+    "project_id": "physiofit-27cd5",
+    "storage_bucket": "physiofit-27cd5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:531022885638:android:7e176c4f12bb9f71b3a487",
+        "android_client_info": {
+          "package_name": "com.google.mediapipe.examples.poselandmarker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "531022885638-hnicruars66smca0tu5bjq21oi441tvi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.google.mediapipe.examples.poselandmarker",
+            "certificate_hash": "3952502fc23965455bdcad764b4f913c6acff33a"
+          }
+        },
+        {
+          "client_id": "531022885638-e7odrta7imb6p9h24b1ifedu0ima3sgp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALBPYcMdwSZxvk1zQk5Ukt33u7C9wkfpg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "531022885638-e7odrta7imb6p9h24b1ifedu0ima3sgp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

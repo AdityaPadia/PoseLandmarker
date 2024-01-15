@@ -24,9 +24,11 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
+import com.google.mediapipe.formats.proto.LandmarkProto
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.components.containers.Landmark
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -151,6 +153,102 @@ class PoseLandmarkerHelper(
         }
     }
 
+    private fun smoothNormalizedLandmarks(poseLandmarkerResults: List<PoseLandmarkerResult>): List<PoseLandmarkerResult> {
+
+        val smoothedResults = mutableListOf<PoseLandmarkerResult>()
+
+        // Looping through the results, taking 8 frames at a time
+        for (i in 0 until poseLandmarkerResults.size - 7 step 8) {
+            val eightFrames = poseLandmarkerResults.subList(i, i + 8)
+
+            val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
+            val averagedWorldLandmarkList = mutableListOf<Landmark>()
+
+            val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
+
+            // Processing each joint
+            for (j in 0 until 33) {
+
+
+                val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
+                val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
+                val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
+
+                val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
+                val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
+                val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
+
+
+                val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
+                val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
+                val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
+
+                val averagedXWorld = xValuesWorld.subList(2, 6).average()
+                val averagedYWorld = yValuesWorld.subList(2, 6).average()
+                val averagedZWorld = zValuesWorld.subList(2, 6).average()
+
+                averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
+                averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
+            }
+
+        }
+
+        return smoothedResults
+    }
+
+    fun smoothWorldLandmarks(poseLandmarkerResults: List<PoseLandmarkerResult>): List<PoseLandmarkerResult> {
+        val smoothedResults = mutableListOf<PoseLandmarkerResult>()
+
+        // Looping through the results, taking 8 frames at a time
+        for (i in 0 until poseLandmarkerResults.size - 7 step 8) {
+            val eightFrames = poseLandmarkerResults.subList(i, i + 8)
+
+            //Contains list of landmarks for all joints
+            val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
+            val averagedWorldLandmarkList = mutableListOf<Landmark>()
+
+            val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
+
+            // Processing each joint
+            for (j in 0 until 33) {
+
+
+                val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
+                val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
+                val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
+
+                val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
+                val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
+                val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
+
+
+                val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
+                val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
+                val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
+
+                val averagedXWorld = xValuesWorld.subList(2, 6).average()
+                val averagedYWorld = yValuesWorld.subList(2, 6).average()
+                val averagedZWorld = zValuesWorld.subList(2, 6).average()
+
+
+                averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
+                averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
+            }
+
+            val normalizedLandmarkList = mutableListOf<List<NormalizedLandmark>>()
+            normalizedLandmarkList.add(averagedNormalizedLandmarkList)
+
+            val worldLandmarkList = mutableListOf<List<Landmark>>()
+            worldLandmarkList.add(averagedWorldLandmarkList)
+
+//            val poseLandmarkerResult = PoseLandmarkerResult(normalizedLandmarkList, worldLandmarkList, averageTimestamp)
+        }
+
+//        smoothedResults.add()
+
+        return smoothedResults
+    }
+
     // Convert the ImageProxy to MP Image and feed it to PoselandmakerHelper.
     fun detectLiveStream(
         imageProxy: ImageProxy,
@@ -250,6 +348,7 @@ class PoseLandmarkerHelper(
         val resultList = mutableListOf<PoseLandmarkerResult>()
         val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
 
+
         for (i in 0..numberOfFrameToRead) {
             val timestampMs = i * inferenceIntervalMs // ms
 
@@ -299,7 +398,48 @@ class PoseLandmarkerHelper(
             return null
         } else {
             val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
-//            Log.i("inferenceTimePerFrameMs", inferenceTimePerFrameMs.toString())
+
+
+            //Call the smoothing function and get the new list of smooth coordinates
+//            Log.d("SMOOTHING", "starting smoothing algorithm")
+//            for (i in 4 until resultBundle.results.size - 4 step 4) {
+//                val eightFrames = resultBundle.results.subList(i - 4, i + 4)
+//
+//                //Contains list of landmarks for all joints
+//                val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
+//                val averagedWorldLandmarkList = mutableListOf<Landmark>()
+//
+//                val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
+//
+//                // Processing each joint
+//                for (j in 0 until 33) {
+//
+//
+//                    val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
+//                    val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
+//                    val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
+//
+//                    val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
+//                    val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
+//                    val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
+//
+//
+//                    val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
+//                    val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
+//                    val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
+//
+//                    val averagedXWorld = xValuesWorld.subList(2, 6).average()
+//                    val averagedYWorld = yValuesWorld.subList(2, 6).average()
+//                    val averagedZWorld = zValuesWorld.subList(2, 6).average()
+//
+//
+//                    averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
+//                    averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
+//                }
+//
+//                resultBundle.results[i].landmarks()[0] = averagedNormalizedLandmarkList
+//                resultBundle.results[i].worldLandmarks()[0] = averagedWorldLandmarkList
+//            }
 
 //            val veryLongString = resultBundle.toString()
 //            val maxLogSize = 1000
@@ -312,7 +452,6 @@ class PoseLandmarkerHelper(
 //                Log.v("resultBundle", veryLongString.substring(start, end))
 //            }
 
-//            Log.i("resultBundle", resultBundle.toString())
             return resultBundle
         }
     }

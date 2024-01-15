@@ -19,13 +19,16 @@ package com.google.mediapipe.examples.poselandmarker
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.google.firebase.auth.FirebaseAuth
 import com.google.mediapipe.examples.poselandmarker.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var activityMainBinding: ActivityMainBinding
+    private lateinit var auth: FirebaseAuth
     private val viewModel : MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,9 +36,7 @@ class MainActivity : AppCompatActivity() {
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
 
-        Intent(this, VideoCameraActivity::class.java).also{
-            startActivity(it)
-        }
+        checkUserLoggedIn()
 
 
 
@@ -46,6 +47,24 @@ class MainActivity : AppCompatActivity() {
 //        activityMainBinding.navigation.setOnNavigationItemReselectedListener {
 //            // ignore the reselection
 //        }
+    }
+
+    private fun checkUserLoggedIn() {
+        auth = FirebaseAuth.getInstance()
+        val firebaseUser = auth.currentUser
+
+        if (firebaseUser != null) {
+            Log.d("LOGIN : ","User is logged in")
+            Intent(this, VideoCameraActivity::class.java).also{
+                startActivity(it)
+            }
+        }
+        else {
+            Log.d("LOGIN : ", "User is not logged in")
+            Intent(this, LoginActivity::class.java).also {
+                startActivity(it)
+            }
+        }
     }
 
     override fun onBackPressed() {
