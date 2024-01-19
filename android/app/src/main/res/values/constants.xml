@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="angle_blue">30</integer>
+    <integer name="angle_yellow">60</integer>
+    <integer name="angle_red">90</integer>
+</resources>

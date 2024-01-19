@@ -4,6 +4,7 @@
     <!-- Declare features -->
     <uses-feature android:name="android.hardware.camera" /> <!-- Declare permissions -->
     <uses-permission android:name="android.permission.CAMERA" />
+     <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE"/>
 
     <application
         android:allowBackup="true"
@@ -14,6 +15,9 @@
         android:taskAffinity=""
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
         <activity
             android:name=".LoginActivity"
             android:exported="false" />

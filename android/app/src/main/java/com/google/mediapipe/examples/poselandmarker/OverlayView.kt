@@ -107,13 +107,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             }
                         }
 
-//                        for (jointPair in jointPairsList) {
-//                            if ((jointPair.first == start && jointPair.second == end)) {
-//                                isFound = true;
-//                                break;
-//                            }
-//                        }
-
                         if (isFound && jointAngleList.isNotEmpty()) {
                             val angle = jointAngleList[index]
                             if (angle < 30) {

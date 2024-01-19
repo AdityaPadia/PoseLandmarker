@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="horizontal"
+    tools:context=".ItemFragment"
+    >
+
+    <!-- TODO: Update blank fragment layout -->
+
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cvFragmentItem"
+        android:layout_width="match_parent"
+        android:layout_height="115dp"
+        app:cardCornerRadius="15dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#000000"
+        android:layout_margin="5dp"
+    >
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:weightSum="10"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivExercisePicture"
+                android:layout_width="0dp"
+                android:layout_weight="2"
+                android:layout_height="80dp"
+                android:layout_margin="10dp"
+                android:layout_gravity="center"
+                android:src="@drawable/common_google_signin_btn_icon_disabled"
+            />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/textContainerView"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8">
+
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Exercise Name"
+                    android:textStyle="bold"
+                    android:textSize="16dp"
+                    android:padding="10dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                />
+
+                <TextView
+                    android:id="@+id/tvDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Exercise Description"
+                    android:paddingHorizontal="10dp"
+                    app:layout_constraintTop_toBottomOf="@id/tvTitle"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 
         if (firebaseUser != null) {
             Log.d("LOGIN : ","User is logged in")
-            Intent(this, VideoCameraActivity::class.java).also{
+            Intent(this, HomeActivity::class.java).also{
                 startActivity(it)
             }
         }

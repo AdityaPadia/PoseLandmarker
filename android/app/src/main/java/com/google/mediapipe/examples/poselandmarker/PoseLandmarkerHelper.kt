@@ -241,7 +241,7 @@ class PoseLandmarkerHelper(
             val worldLandmarkList = mutableListOf<List<Landmark>>()
             worldLandmarkList.add(averagedWorldLandmarkList)
 
-//            val poseLandmarkerResult = PoseLandmarkerResult(normalizedLandmarkList, worldLandmarkList, averageTimestamp)
+//            val poseLandmarkerResult = PoseLandmarkerResult.create(normalizedLandmarkList, worldLandmarkList, averageTimestamp)
         }
 
 //        smoothedResults.add()
@@ -348,7 +348,7 @@ class PoseLandmarkerHelper(
         val resultList = mutableListOf<PoseLandmarkerResult>()
         val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
 
-
+        Log.d("DetectVideo", "Loop to start detection")
         for (i in 0..numberOfFrameToRead) {
             val timestampMs = i * inferenceIntervalMs // ms
 
@@ -392,66 +392,15 @@ class PoseLandmarkerHelper(
         val inferenceTimePerFrameMs =
             (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
 
+        Log.d("Completed Results", "Completed Results")
+
 
 
         if (didErrorOccurred) {
             return null
         } else {
             val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
-
-
-            //Call the smoothing function and get the new list of smooth coordinates
-//            Log.d("SMOOTHING", "starting smoothing algorithm")
-//            for (i in 4 until resultBundle.results.size - 4 step 4) {
-//                val eightFrames = resultBundle.results.subList(i - 4, i + 4)
-//
-//                //Contains list of landmarks for all joints
-//                val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
-//                val averagedWorldLandmarkList = mutableListOf<Landmark>()
-//
-//                val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
-//
-//                // Processing each joint
-//                for (j in 0 until 33) {
-//
-//
-//                    val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
-//                    val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
-//                    val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
-//
-//                    val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
-//                    val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
-//                    val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
-//
-//
-//                    val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
-//                    val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
-//                    val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
-//
-//                    val averagedXWorld = xValuesWorld.subList(2, 6).average()
-//                    val averagedYWorld = yValuesWorld.subList(2, 6).average()
-//                    val averagedZWorld = zValuesWorld.subList(2, 6).average()
-//
-//
-//                    averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
-//                    averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
-//                }
-//
-//                resultBundle.results[i].landmarks()[0] = averagedNormalizedLandmarkList
-//                resultBundle.results[i].worldLandmarks()[0] = averagedWorldLandmarkList
-//            }
-
-//            val veryLongString = resultBundle.toString()
-//            val maxLogSize = 1000
-//
-//            //Printing the resultBundle
-//            for (i in 0..veryLongString.length / maxLogSize) {
-//                val start: Int = i * maxLogSize
-//                var end: Int = (i + 1) * maxLogSize
-//                end = if (end > veryLongString.length) veryLongString.length else end
-//                Log.v("resultBundle", veryLongString.substring(start, end))
-//            }
-
+            Log.i("String conversion", "Starting string conversion")
             return resultBundle
         }
     }
@@ -545,9 +494,9 @@ class PoseLandmarkerHelper(
 
         const val DELEGATE_CPU = 0
         const val DELEGATE_GPU = 1
-        const val DEFAULT_POSE_DETECTION_CONFIDENCE = 0.5F
-        const val DEFAULT_POSE_TRACKING_CONFIDENCE = 0.5F
-        const val DEFAULT_POSE_PRESENCE_CONFIDENCE = 0.5F
+        const val DEFAULT_POSE_DETECTION_CONFIDENCE = 0.7F
+        const val DEFAULT_POSE_TRACKING_CONFIDENCE = 0.7F
+        const val DEFAULT_POSE_PRESENCE_CONFIDENCE = 0.7F
         const val DEFAULT_NUM_POSES = 1
         const val OTHER_ERROR = 0
         const val GPU_ERROR = 1

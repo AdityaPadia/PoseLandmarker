@@ -31,6 +31,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.google.mediapipe.examples.poselandmarker.DataTransfer
 import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
@@ -57,6 +59,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
     private var jointPairsList = listOf<Pair<Int, Int>>()
+    private var mediaUri = ""
 
 
     /** Blocking ML operations are performed using this executor */
@@ -89,12 +92,17 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         _fragmentGalleryBinding =
             FragmentGalleryBinding.inflate(inflater, container, false)
 
+        mediaUri = arguments?.getString("uri").toString()
 
         return fragmentGalleryBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        //TODO : Add run detection on video here
+//        runDetectionOnVideo(Uri.parse(mediaUri))
+
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
@@ -313,9 +321,9 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         updateDisplayView(MediaType.VIDEO)
 
         with(fragmentGalleryBinding.videoView) {
-            setVideoURI(uri)
+            setVideoURI(Uri.parse(mediaUri))
             // mute the audio
-            setOnPreparedListener { it.setVolume(0f, 0f) }
+//            setOnPreparedListener { it.setVolume(0f, 0f) }
             requestFocus()
         }
 
@@ -337,8 +345,18 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentGalleryBinding.progress.visibility = View.VISIBLE
             }
 
+//            val db = Firebase.firestore
+//            val document = db.collection("instructor_vid").document()
 
-            poseLandmarkerHelper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
+            //Saving resultBundle to Firestore DB
+//            poseLandmarkerHelper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
+//                ?.let { resultBundle ->
+//                    document.set(resultBundle)
+//                }
+//                ?: run { Log.e(TAG, "Error running pose landmarker.") }
+
+            //TODO : load resultBundle and display results
+            poseLandmarkerHelper.detectVideoFile(Uri.parse(mediaUri), VIDEO_INTERVAL_MS)
                 ?.let { resultBundle ->
                     activity?.runOnUiThread { displayVideoResult(resultBundle) }
                 }
@@ -495,6 +513,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         private const val TAG = "GalleryFragment"
 
         // Value used to get frames at specific intervals for inference (e.g. every 300ms)
-        private const val VIDEO_INTERVAL_MS = 300L
+        private const val VIDEO_INTERVAL_MS = 1000L
     }
 }
