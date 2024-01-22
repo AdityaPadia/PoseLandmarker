@@ -42,24 +42,21 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
                     it.replace("(", "")
                     it.replace(")", "")
                 }
-                first = first.substring(1, first.length)
-                second = second.trim()
+                if (first[0] == '(') {
+                    first = first.substring(1, first.length)
+                    second = second.trim()
+                }
+                else {
+                    first = first.substring(0, first.length)
+                    second = second.trim()
+                }
+
 
                 Log.i("first", first)
                 Log.i("second", second)
                 val pair = Pair(first.toInt(), second.toInt())
                 finalPairList.add(pair)
             }
-
-//            finalPairList = pairStrings.map { pairString ->
-//                var (first, second) = pairString.split(",").map {
-//                    it.replace("(", "")
-//                    it.replace(")", "")
-//                }
-//                first = first.substring(1, first.length)
-//                second = second.trim()
-//                Pair(first.toInt(), second.toInt())
-//            }.toList()
         }
 
         return finalPairList
@@ -101,17 +98,17 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         cameraFragment.setJointList(pairs)
         galleryFragment.setJointList(pairs)
 
-        replaceCameraFragment(cameraFragment, cameraFragmentLayout.id, pairs)
-        replaceVideoFragment(galleryFragment, videoFragmentLayout.id, pairs, uri)
+        replaceCameraFragment(cameraFragment, cameraFragmentLayout.id)
+        replaceVideoFragment(galleryFragment, videoFragmentLayout.id)
     }
 
-    private fun replaceCameraFragment(fragment: Fragment, id: Int, jointPairs : List<Pair<Int, Int>>) {
+    private fun replaceCameraFragment(fragment: Fragment, id: Int) {
         val transaction: FragmentTransaction = fragmentManager.beginTransaction()
         transaction.replace(id, fragment)
         transaction.commit()
     }
 
-    private fun replaceVideoFragment(fragment: Fragment, id: Int, jointPairs : List<Pair<Int, Int>>, uri: String) {
+    private fun replaceVideoFragment(fragment: Fragment, id: Int) {
         val bundle = Bundle()
         bundle.putString("uri", uri)
         fragment.arguments = bundle
