@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
 import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
+import java.util.Queue
 import kotlin.math.acos
 import kotlin.math.sqrt
 
@@ -142,21 +143,31 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         return x * other.x + y * other.y + z * other.z
     }
 
-    fun radiansToDegrees(radians: Float): Float {
+    private fun radiansToDegrees(radians: Float): Float {
         return Math.toDegrees(radians.toDouble()).toFloat()
     }
 
     private fun angleBetweenDegrees() : List<Float> {
 
+        val pairsLen = pairs.size
+        val queueLen = 8
+        val queues: MutableList<ArrayDeque<Float>> = mutableListOf()
 
+        for (i in 0 until pairsLen) {
+            queues.add(ArrayDeque(8))
+        }
 
         if (videoVectorList.isNotEmpty() && livestreamVectorList.isNotEmpty())
         {
             val angleDegreeList = mutableListOf<Float>()
 
             for (vector in 0 until videoVectorList.size) {
+
                 val videoVector = videoVectorList[vector] //Only use when video exists
                 val livestreamVector = livestreamVectorList[vector]
+
+                //Selecting the queue for the vector
+                val queue = queues[vector]
 
                 //Normalize the vectors
                 val unitVideoVector = unitVector(videoVector)
@@ -166,10 +177,21 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
                 val angleRadians = acos(dotProduct)
                 val angleDegrees: Float = radiansToDegrees(angleRadians)
 
-                angleDegreeList.add(angleDegrees)
+                if (queue.size >= 8) {
+                    queue.removeFirst()
+                    queue.add(angleDegrees)
+                }
+                else {
+                    queue.add(angleDegrees)
+                }
 
+                Log.i("Queue", queue.toString())
+//
+                val smoothAngle = (queue.sum()/queue.size) as Float
+                Log.i("smoothAngle", smoothAngle.toString())
+
+                angleDegreeList.add(smoothAngle)
             }
-
             cameraFragment.setAngleList(angleDegreeList)
             return angleDegreeList
         }

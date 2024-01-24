@@ -24,6 +24,7 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
+import com.google.gson.Gson
 import com.google.mediapipe.formats.proto.LandmarkProto
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -151,102 +152,6 @@ class PoseLandmarkerHelper(
                 "Image classifier failed to load model with error: " + e.message
             )
         }
-    }
-
-    private fun smoothNormalizedLandmarks(poseLandmarkerResults: List<PoseLandmarkerResult>): List<PoseLandmarkerResult> {
-
-        val smoothedResults = mutableListOf<PoseLandmarkerResult>()
-
-        // Looping through the results, taking 8 frames at a time
-        for (i in 0 until poseLandmarkerResults.size - 7 step 8) {
-            val eightFrames = poseLandmarkerResults.subList(i, i + 8)
-
-            val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
-            val averagedWorldLandmarkList = mutableListOf<Landmark>()
-
-            val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
-
-            // Processing each joint
-            for (j in 0 until 33) {
-
-
-                val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
-                val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
-                val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
-
-                val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
-                val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
-                val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
-
-
-                val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
-                val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
-                val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
-
-                val averagedXWorld = xValuesWorld.subList(2, 6).average()
-                val averagedYWorld = yValuesWorld.subList(2, 6).average()
-                val averagedZWorld = zValuesWorld.subList(2, 6).average()
-
-                averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
-                averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
-            }
-
-        }
-
-        return smoothedResults
-    }
-
-    fun smoothWorldLandmarks(poseLandmarkerResults: List<PoseLandmarkerResult>): List<PoseLandmarkerResult> {
-        val smoothedResults = mutableListOf<PoseLandmarkerResult>()
-
-        // Looping through the results, taking 8 frames at a time
-        for (i in 0 until poseLandmarkerResults.size - 7 step 8) {
-            val eightFrames = poseLandmarkerResults.subList(i, i + 8)
-
-            //Contains list of landmarks for all joints
-            val averagedNormalizedLandmarkList = mutableListOf<NormalizedLandmark>()
-            val averagedWorldLandmarkList = mutableListOf<Landmark>()
-
-            val averageTimestamp = eightFrames.map { it.timestampMs() }.average().toLong()
-
-            // Processing each joint
-            for (j in 0 until 33) {
-
-
-                val xValuesNormalized = eightFrames.map { it.landmarks()[0][j].x() }.sorted()
-                val yValuesNormalized = eightFrames.map { it.landmarks()[0][j].y() }.sorted()
-                val zValuesNormalized = eightFrames.map { it.landmarks()[0][j].z() }.sorted()
-
-                val xValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].x() }.sorted()
-                val yValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].y() }.sorted()
-                val zValuesWorld = eightFrames.map { it.worldLandmarks()[0][j].z() }.sorted()
-
-
-                val averagedXNormalized = xValuesNormalized.subList(2, 6).average()
-                val averagedYNormalized = yValuesNormalized.subList(2, 6).average()
-                val averagedZNormalized = zValuesNormalized.subList(2, 6).average()
-
-                val averagedXWorld = xValuesWorld.subList(2, 6).average()
-                val averagedYWorld = yValuesWorld.subList(2, 6).average()
-                val averagedZWorld = zValuesWorld.subList(2, 6).average()
-
-
-                averagedNormalizedLandmarkList.add(NormalizedLandmark.create(averagedXNormalized.toFloat(), averagedYNormalized.toFloat(), averagedZNormalized.toFloat()))
-                averagedWorldLandmarkList.add(Landmark.create(averagedXWorld.toFloat(), averagedYWorld.toFloat(), averagedZWorld.toFloat()))
-            }
-
-            val normalizedLandmarkList = mutableListOf<List<NormalizedLandmark>>()
-            normalizedLandmarkList.add(averagedNormalizedLandmarkList)
-
-            val worldLandmarkList = mutableListOf<List<Landmark>>()
-            worldLandmarkList.add(averagedWorldLandmarkList)
-
-//            val poseLandmarkerResult = PoseLandmarkerResult.create(normalizedLandmarkList, worldLandmarkList, averageTimestamp)
-        }
-
-//        smoothedResults.add()
-
-        return smoothedResults
     }
 
     // Convert the ImageProxy to MP Image and feed it to PoselandmakerHelper.
@@ -399,8 +304,13 @@ class PoseLandmarkerHelper(
         if (didErrorOccurred) {
             return null
         } else {
+            Log.i("resultBundle", "Finished detection")
             val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
-            Log.i("String conversion", "Starting string conversion")
+//            val gson = Gson()
+//            val jsonString = gson.toJson(resultBundle)
+//            Log.i("jsonString", jsonString.toString())
+//            Log.i("deserialization", "converting from json string to resultBundle2")
+//            val resultBundle2 = gson.fromJson(jsonString, ResultBundle::class.java)
             return resultBundle
         }
     }

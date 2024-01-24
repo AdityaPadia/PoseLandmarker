@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.room.Room
 
 class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,8 +18,9 @@ class HomeActivity : AppCompatActivity() {
         val bundle2 = Bundle()
 
         val exercise1 = Exercise(
+            1,
             "Arms",
-            "Arm Workout Nigga",
+            "Arm Workout Description",
             "android.resource://$packageName/${R.raw.arms}",
             listOf(
                 Pair(12, 14),
@@ -30,8 +32,9 @@ class HomeActivity : AppCompatActivity() {
             )
 
         val exercise2 = Exercise(
+            2,
             "Legs and Hips",
-            "Legs and Hips nigga",
+            "Legs and Hips Description",
             "android.resource://$packageName/${R.raw.legsandhips}",
             listOf(
                 Pair(23, 24),
