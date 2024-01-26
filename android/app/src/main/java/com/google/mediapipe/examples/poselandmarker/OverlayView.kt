@@ -16,18 +16,31 @@
 package com.google.mediapipe.examples.poselandmarker
 
 import android.content.Context
+import android.graphics.Camera
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.widget.Gallery
+import androidx.core.app.NotificationCompat.GroupAlertBehavior
 import androidx.core.content.ContextCompat
+import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
+import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import java.util.Timer
+import java.util.TimerTask
 import kotlin.math.max
 import kotlin.math.min
+
+
+interface OverlayViewListener {
+    fun onOverlayViewPause()
+    fun onOverlayViewPlay()
+}
 
 class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
@@ -42,6 +55,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var jointAngleList = listOf<Float>()
+
+    private var isRed = false
+    private var redTimer: Timer? = null
+
+    private var overlayViewListener: OverlayViewListener? = null
 
     init {
         initPaints()
@@ -70,12 +88,18 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         pointPaint.style = Paint.Style.FILL
     }
 
+    fun setOverlayViewListener(listener: OverlayViewListener) {
+        overlayViewListener = listener
+    }
+
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 
         val blueColor = ContextCompat.getColor(context!!, R.color.mp_color_primary)
         val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
         val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
+
+
 
         results?.let { poseLandmarkerResult ->
             for(landmark in poseLandmarkerResult.landmarks()) {
@@ -87,11 +111,13 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         pointPaint
                     )
                 }
+                var isAnyJointRed = false
 
                 PoseLandmarker.POSE_LANDMARKS.forEach {
 
                     val start = it.start()
                     val end = it.end()
+
 
                     if (jointPairsList.isNotEmpty())
                     {
@@ -115,13 +141,18 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             else if (angle >= 30 && angle < 60) {
                                 linePaint.color = yellowColor
                             }
-                            else if (angle >= 60) {
+                            else if (angle >= 60 && angle < 80) {
                                 linePaint.color = redColor
+                                isAnyJointRed = true
+                                Log.i("Color", "$start, $end joint color is red")
+
                             }
                         }
                         else {
                             linePaint.color = blueColor
                         }
+
+
 
                         canvas.drawLine(
                             poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
@@ -141,6 +172,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             linePaint)
                     }
 
+                }
+
+                if (isAnyJointRed) {
+                    Log.i("isAnyJointRed", "yes it is nigga")
+                    overlayViewListener?.onOverlayViewPause()
+
+                } else {
+                    Log.i("isAnyJointRed", "nah nigga not rn")
+                    overlayViewListener?.onOverlayViewPlay()
                 }
             }
         }

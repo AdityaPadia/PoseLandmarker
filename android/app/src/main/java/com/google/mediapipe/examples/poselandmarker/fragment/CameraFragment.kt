@@ -40,7 +40,10 @@ import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.OverlayView
+import com.google.mediapipe.examples.poselandmarker.OverlayViewListener
 import com.google.mediapipe.examples.poselandmarker.R
+import com.google.mediapipe.examples.poselandmarker.SyncInterface
+import com.google.mediapipe.examples.poselandmarker.VideoCameraActivity
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -49,7 +52,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
+class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener, OverlayViewListener {
 
     companion object {
         private const val TAG = "Pose Landmarker"
@@ -69,6 +72,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var cameraFacing = CameraSelector.LENS_FACING_FRONT
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var angleList = listOf<Float>()
+    private var syncInterface: SyncInterface? = null
 
 
     /** Blocking ML operations are performed using this executor */
@@ -158,6 +162,14 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         // Attach listeners to UI control widgets
         initBottomSheetControls()
+    }
+
+    override fun onOverlayViewPause() {
+        pauseVideo()
+    }
+
+    override fun onOverlayViewPlay() {
+        playVideo()
     }
 
     private fun initBottomSheetControls() {
@@ -390,9 +402,23 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 //        }
     }
 
+    fun setSyncInterface(listener: SyncInterface) {
+        syncInterface = listener
+    }
+
     fun setAngleList(jointAngleList : List<Float>) {
         angleList = jointAngleList
 //        Log.i("angleList", angleList.toString())
+    }
+
+    private fun pauseVideo() {
+        Log.i("pauseVideo", "pauseVideo")
+        syncInterface?.onVideoPause()
+    }
+
+    private fun playVideo() {
+        Log.i("playVideo", "playVideo")
+        syncInterface?.onVideoPlay()
     }
 
     //Function that takes two joint indexes as input and returns the vector between them
@@ -440,6 +466,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             if (_fragmentCameraBinding != null) {
 
                 fragmentCameraBinding.overlay.setJointList(jointPairsList)
+                fragmentCameraBinding.overlay.setOverlayViewListener(this)
 
                 if (angleList.isNotEmpty()) {
                     fragmentCameraBinding.overlay.setAngleList(angleList)

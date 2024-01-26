@@ -14,7 +14,7 @@ import java.util.Queue
 import kotlin.math.acos
 import kotlin.math.sqrt
 
-class VideoCameraActivity : AppCompatActivity(), DataTransfer {
+class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
 
     private lateinit var fragmentManager: FragmentManager
     private var videoVectorList = mutableListOf<LandmarkVector?>()
@@ -63,6 +63,13 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         return finalPairList
     }
 
+    fun pauseVideo() {
+        galleryFragment.pauseVideo()
+    }
+    fun playVide0() {
+        galleryFragment.playVideo()
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,6 +105,8 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
 
         cameraFragment.setJointList(pairs)
         galleryFragment.setJointList(pairs)
+
+        cameraFragment.setSyncInterface(this)
 
         replaceCameraFragment(cameraFragment, cameraFragmentLayout.id)
         replaceVideoFragment(galleryFragment, videoFragmentLayout.id)
@@ -188,7 +197,6 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
                 Log.i("Queue", queue.toString())
 //
                 val smoothAngle = (queue.sum()/queue.size) as Float
-                Log.i("smoothAngle", smoothAngle.toString())
 
                 angleDegreeList.add(smoothAngle)
             }
@@ -206,7 +214,6 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         val newVideoVectorList = mutableListOf<LandmarkVector?>()
 
         for (landmarkVector in landmarkVectorList) {
-//            val videoVector = landmarkVector
             newVideoVectorList.add(landmarkVector)
         }
 
@@ -216,7 +223,6 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
     }
 
     override fun transferLivestreamLandmarkVector(landmarkVectorList: List<LandmarkVector?>) {
-//        Log.i("LivestreamVector", landmarkVector.toString())
 
         //Set Values
         val newLivestreamVectorList = mutableListOf<LandmarkVector?>()
@@ -226,11 +232,23 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer {
         }
 
         livestreamVectorList = newLivestreamVectorList
-//        Log.i("livestreamVectorList", livestreamVectorList.toString())
 
         val angleRadians = angleBetweenDegrees()
+    }
 
-//        livestreamVector = landmarkVector
-//        val angleRadians = angleBetweenRadians()
+    override fun onVideoPause() {
+        Log.i("Sync Interface", "Pause Video")
+
+        if (galleryFragment.isVideoPlaying()) {
+            galleryFragment.pauseVideo()
+        }
+    }
+
+    override fun onVideoPlay() {
+        Log.i("Sync Interface", "Play Video")
+
+        if (!galleryFragment.isVideoPlaying()) {
+            galleryFragment.playVideo()
+        }
     }
 }

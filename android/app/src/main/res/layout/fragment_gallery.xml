@@ -22,7 +22,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/bottom_sheet_peek_height">
+    >
 
         <TextView
             android:id="@+id/tvPlaceholder"
@@ -35,7 +35,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginBottom="@dimen/bottom_sheet_peek_height">
+        >
 
             <ImageView
                 android:id="@+id/imageResult"

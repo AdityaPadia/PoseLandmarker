@@ -60,6 +60,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var mediaUri = ""
+    private var detectionComplete = false
 
 
     /** Blocking ML operations are performed using this executor */
@@ -93,6 +94,8 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             FragmentGalleryBinding.inflate(inflater, container, false)
 
         mediaUri = arguments?.getString("uri").toString()
+
+//        runDetectionOnVideo(Uri.parse(mediaUri))
 
         return fragmentGalleryBinding.root
     }
@@ -316,6 +319,18 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
     }
 
+    fun isVideoPlaying() : Boolean {
+        return (fragmentGalleryBinding.videoView.isPlaying && detectionComplete)
+    }
+
+    fun pauseVideo() {
+        fragmentGalleryBinding.videoView.pause()
+    }
+
+    fun playVideo() {
+        fragmentGalleryBinding.videoView.start()
+    }
+
     private fun runDetectionOnVideo(uri: Uri) {
         setUiEnabled(false)
         updateDisplayView(MediaType.VIDEO)
@@ -345,19 +360,10 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentGalleryBinding.progress.visibility = View.VISIBLE
             }
 
-//            val db = Firebase.firestore
-//            val document = db.collection("instructor_vid").document()
-
-            //Saving resultBundle to Firestore DB
-//            poseLandmarkerHelper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
-//                ?.let { resultBundle ->
-//                    document.set(resultBundle)
-//                }
-//                ?: run { Log.e(TAG, "Error running pose landmarker.") }
-
             //TODO : load resultBundle and display results
             poseLandmarkerHelper.detectVideoFile(Uri.parse(mediaUri), VIDEO_INTERVAL_MS)
                 ?.let { resultBundle ->
+                    detectionComplete = true
                     activity?.runOnUiThread { displayVideoResult(resultBundle) }
                 }
                 ?: run { Log.e(TAG, "Error running pose landmarker.") }
