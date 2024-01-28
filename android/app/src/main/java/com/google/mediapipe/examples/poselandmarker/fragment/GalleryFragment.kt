@@ -61,6 +61,8 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var mediaUri = ""
     private var detectionComplete = false
+    private var videoPaused = false
+    private var systemClockTime:Long = 0
 
 
     /** Blocking ML operations are performed using this executor */
@@ -325,10 +327,13 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     fun pauseVideo() {
         fragmentGalleryBinding.videoView.pause()
+        videoPaused = true
+        systemClockTime = SystemClock.uptimeMillis()
     }
 
     fun playVideo() {
         fragmentGalleryBinding.videoView.start()
+        videoPaused = false
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
@@ -408,8 +413,16 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         backgroundExecutor.scheduleAtFixedRate(
             {
                 activity?.runOnUiThread {
-                    val videoElapsedTimeMs =
-                        SystemClock.uptimeMillis() - videoStartTimeMs
+                    var videoElapsedTimeMs: Long
+
+                    if (!videoPaused) {
+                        videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs
+                    }
+                    else {
+                        videoElapsedTimeMs = systemClockTime - videoStartTimeMs
+                    }
+//                    val videoElapsedTimeMs =
+//                        SystemClock.uptimeMillis() - videoStartTimeMs
                     val resultIndex =
                         videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
 
