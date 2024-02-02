@@ -133,26 +133,25 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             }
                         }
 
-                        if (isFound && jointAngleList.isNotEmpty()) {
+                        if (isFound && jointAngleList.isNotEmpty())
+                        {
                             val angle = jointAngleList[index]
                             if (angle < 30) {
                                 linePaint.color = blueColor
                             }
-                            else if (angle >= 30 && angle < 60) {
+                            else if (angle >= 30 && angle < 80) {
                                 linePaint.color = yellowColor
                             }
-                            else if (angle >= 60 && angle < 80) {
+                            else if (angle >= 80 && angle < 90) {
+                                //Pause video and play audio
                                 linePaint.color = redColor
                                 isAnyJointRed = true
                                 Log.i("Color", "$start, $end joint color is red")
-
                             }
                         }
                         else {
                             linePaint.color = blueColor
                         }
-
-
 
                         canvas.drawLine(
                             poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
@@ -160,7 +159,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
                             poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
                             linePaint)
-
                     }
                     else
                     {
@@ -175,11 +173,12 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 }
 
                 if (isAnyJointRed) {
-                    Log.i("isAnyJointRed", "yes it is nigga")
+                    //Pause video and play audio
+                    Log.i("isAnyJointRed", "Joint is red")
                     overlayViewListener?.onOverlayViewPause()
 
                 } else {
-                    Log.i("isAnyJointRed", "nah nigga not rn")
+                    Log.i("isAnyJointRed", "Joint is not red")
                     overlayViewListener?.onOverlayViewPlay()
                 }
             }

@@ -83,7 +83,6 @@ class LoginActivity : AppCompatActivity() {
                 sharedPref.edit().putString("email", account.email.toString()).apply()
                 sharedPref.edit().putString("name", account.displayName.toString()).apply()
 
-
                 val intent : Intent = Intent(this, MainActivity::class.java)
                 startActivity(intent)
             } else {

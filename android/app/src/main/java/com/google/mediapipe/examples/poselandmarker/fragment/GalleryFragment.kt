@@ -17,6 +17,7 @@ package com.google.mediapipe.examples.poselandmarker.fragment
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -31,12 +32,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.google.mediapipe.examples.poselandmarker.DataTransfer
 import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
+import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -61,8 +61,10 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var mediaUri = ""
     private var detectionComplete = false
-    private var videoPaused = false
+    private var isVideoPaused = false
+    private var isAudioPlaying = true
     private var systemClockTime:Long = 0
+    private var mediaPlayer: MediaPlayer = MediaPlayer()
 
 
     /** Blocking ML operations are performed using this executor */
@@ -106,13 +108,15 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         super.onViewCreated(view, savedInstanceState)
 
         //TODO : Add run detection on video here
-//        runDetectionOnVideo(Uri.parse(mediaUri))
+//        fragmentGalleryBinding.fabGetContent.visibility = View.GONE
+
 
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
 
         initBottomSheetControls()
+//        runDetectionOnVideo(Uri.parse(mediaUri))
     }
 
     override fun onPause() {
@@ -327,18 +331,43 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     fun pauseVideo() {
         fragmentGalleryBinding.videoView.pause()
-        videoPaused = true
+        isVideoPaused = true
+        //Pause the system clock so that drawing does not proceed
         systemClockTime = SystemClock.uptimeMillis()
+        Toast.makeText(
+            requireContext(),
+            "Posture out of sync.",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        val afd = resources.openRawResourceFd(R.raw.postureoutofsync)
+        mediaPlayer.reset()
+        mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+        mediaPlayer.prepare()
+        mediaPlayer.start()
+        afd.close()
+
+//        val resid = R.raw.postureoutofsync
+//        val mediaPlayer = MediaPlayer.create(activity, resid)
+        isAudioPlaying = true
+        mediaPlayer?.start()
     }
 
     fun playVideo() {
-        fragmentGalleryBinding.videoView.start()
-        videoPaused = false
+        mediaPlayer.setOnCompletionListener {
+            isAudioPlaying = false
+            fragmentGalleryBinding.videoView.start()
+            //Unpause the drawing
+            isVideoPaused = false
+        }
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
+        Log.d("runDetectionOnVideo", "Entered the function")
         setUiEnabled(false)
         updateDisplayView(MediaType.VIDEO)
+
+        Log.d("runDetectionOnVideo", "Step 2")
 
         with(fragmentGalleryBinding.videoView) {
             setVideoURI(Uri.parse(mediaUri))
@@ -347,7 +376,11 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             requestFocus()
         }
 
+        Log.d("runDetectionOnVideo", "Step 3")
+
         backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+
+        Log.d("runDetectionOnVideo", "Step 4")
         backgroundExecutor.execute {
 
             poseLandmarkerHelper =
@@ -364,6 +397,8 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentGalleryBinding.videoView.visibility = View.GONE
                 fragmentGalleryBinding.progress.visibility = View.VISIBLE
             }
+
+            Log.d("runDetectionOnVideo", "Step 5")
 
             //TODO : load resultBundle and display results
             poseLandmarkerHelper.detectVideoFile(Uri.parse(mediaUri), VIDEO_INTERVAL_MS)
@@ -415,14 +450,13 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 activity?.runOnUiThread {
                     var videoElapsedTimeMs: Long
 
-                    if (!videoPaused) {
+                    if (!isVideoPaused) {
                         videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs
                     }
                     else {
                         videoElapsedTimeMs = systemClockTime - videoStartTimeMs
                     }
-//                    val videoElapsedTimeMs =
-//                        SystemClock.uptimeMillis() - videoStartTimeMs
+
                     val resultIndex =
                         videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
 

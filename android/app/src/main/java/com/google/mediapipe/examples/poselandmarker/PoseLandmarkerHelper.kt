@@ -219,12 +219,17 @@ class PoseLandmarkerHelper(
         videoUri: Uri,
         inferenceIntervalMs: Long
     ): ResultBundle? {
+
+        Log.d("runDetectionOnVideo", "Step 6")
+
         if (runningMode != RunningMode.VIDEO) {
             throw IllegalArgumentException(
                 "Attempting to call detectVideoFile" +
                         " while not using RunningMode.VIDEO"
             )
         }
+
+        Log.d("runDetectionOnVideo", "Step 7")
 
         // Inference time is the difference between the system time at the start and finish of the
         // process
@@ -252,6 +257,8 @@ class PoseLandmarkerHelper(
         // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
         val resultList = mutableListOf<PoseLandmarkerResult>()
         val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
+
+        Log.d("runDetectionOnVideo", "Step 8")
 
         Log.d("DetectVideo", "Loop to start detection")
         for (i in 0..numberOfFrameToRead) {

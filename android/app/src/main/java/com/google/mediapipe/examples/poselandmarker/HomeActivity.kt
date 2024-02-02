@@ -1,9 +1,12 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.room.Room
 
 class HomeActivity : AppCompatActivity() {
@@ -11,11 +14,18 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        val tvWelcomeBack = findViewById<TextView>(R.id.tvWelcomeBack)
+        val sharedPref: SharedPreferences = getSharedPreferences("userprefs", Context.MODE_PRIVATE)
+        val name = sharedPref.getString("name", "")
+
+        tvWelcomeBack.text = "Welcome $name!"
+
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
 
         val bundle1 = Bundle()
         val bundle2 = Bundle()
+        val bundle3 = Bundle()
 
         val exercise1 = Exercise(
             1,
@@ -46,6 +56,20 @@ class HomeActivity : AppCompatActivity() {
             null
         )
 
+        val exercise3 = Exercise(
+            3,
+            "Shoulders",
+            "Shoulder Stretching Workout",
+            "android.resource://$packageName/${R.raw.shoulders}",
+            listOf(
+                Pair(12, 14),
+                Pair(11, 13),
+                Pair(13, 15),
+                Pair(14, 16)
+            ),
+            null
+        )
+
 
         bundle1.putString("exerciseName", exercise1.name)
         bundle1.putString("exerciseDescription", exercise1.description)
@@ -66,6 +90,15 @@ class HomeActivity : AppCompatActivity() {
         val fragment2 = ItemFragment()
         fragment2.arguments = bundle2
         fragmentTransaction.add(R.id.fragmentContainer, fragment2)
+
+        bundle3.putString("exerciseName", exercise3.name)
+        bundle3.putString("exerciseDescription", exercise3.description)
+        bundle3.putString("uri", exercise3.uri)
+        bundle3.putString("pairs", exercise3.pairs.toString())
+
+        val fragment3 = ItemFragment()
+        fragment3.arguments = bundle3
+        fragmentTransaction.add(R.id.fragmentContainer, fragment3)
 
         fragmentTransaction.commit()
     }
