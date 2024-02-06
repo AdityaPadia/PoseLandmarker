@@ -395,15 +395,15 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     fun playVideo() {
         if (isVideoPaused) {
-            totalPausedDurationMs += SystemClock.uptimeMillis() - videoPauseStartTimeMs
-            videoStartTimeMs = SystemClock.uptimeMillis() - videoElapsedTimeMs
-            fragmentGalleryBinding.videoView.start()
-//            isVideoPaused = false
-//            Log.i("isVideoPaused", isVideoPaused.toString())
-//            resultIndex = lastResultIndex
-//            fragmentGalleryBinding.videoView.start()
+            mediaPlayer.setOnCompletionListener {
+                totalPausedDurationMs += SystemClock.uptimeMillis() - videoPauseStartTimeMs
+                videoStartTimeMs = SystemClock.uptimeMillis() - videoElapsedTimeMs
+                fragmentGalleryBinding.videoView.start()
+                isVideoPaused = false
+            }
+
         }
-        isVideoPaused = false
+//        isVideoPaused = false
 
     }
 

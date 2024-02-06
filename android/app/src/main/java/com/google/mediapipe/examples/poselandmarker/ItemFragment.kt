@@ -47,10 +47,11 @@ class ItemFragment : Fragment() {
         tvDescription.text = arguments?.getString("exerciseDescription")
         val uri = arguments?.getString("uri").toString()
         val pairList = arguments?.getString("pairs").toString()
+        val imageResID = arguments?.getString("imageResID")?.toInt()
 
-//        Log.i("pairsList after conversion", pairsList.toString())
-
-
+        if (imageResID != null) {
+            ivExercisePicture.setImageResource(imageResID)
+        }
 
         view.setOnClickListener {
             Log.i("URI", uri)

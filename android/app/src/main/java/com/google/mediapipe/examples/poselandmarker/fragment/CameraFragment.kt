@@ -160,6 +160,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener, Over
             )
         }
 
+
+
         // Attach listeners to UI control widgets
         initBottomSheetControls()
     }

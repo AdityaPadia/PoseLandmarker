@@ -10,5 +10,6 @@ data class Exercise(
     val name: String,
     val description: String,
     val uri: String,
+    val resID: Int,
     val pairs: List<Pair<Int, Int>>,
     val resultBundle: PoseLandmarkerHelper.ResultBundle?)
