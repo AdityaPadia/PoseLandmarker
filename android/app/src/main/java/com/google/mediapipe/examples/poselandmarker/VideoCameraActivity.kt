@@ -66,7 +66,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
     fun pauseVideo() {
         galleryFragment.pauseVideo()
     }
-    fun playVide0() {
+    fun playVideo() {
         galleryFragment.playVideo()
     }
 
@@ -240,7 +240,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
         Log.i("Sync Interface", "Pause Video")
 
         if (galleryFragment.isVideoPlaying()) {
-            galleryFragment.pauseVideo()
+            pauseVideo()
         }
     }
 
@@ -248,7 +248,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
         Log.i("Sync Interface", "Play Video")
 
         if (!galleryFragment.isVideoPlaying()) {
-            galleryFragment.playVideo()
+            playVideo()
         }
     }
 }

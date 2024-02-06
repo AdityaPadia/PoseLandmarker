@@ -31,6 +31,10 @@ import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Timer
 import java.util.TimerTask
 import kotlin.math.max
@@ -139,10 +143,10 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                             if (angle < 30) {
                                 linePaint.color = blueColor
                             }
-                            else if (angle >= 30 && angle < 80) {
+                            else if (angle >= 30 && angle < 60) {
                                 linePaint.color = yellowColor
                             }
-                            else if (angle >= 80 && angle < 90) {
+                            else if (angle >= 60) {
                                 //Pause video and play audio
                                 linePaint.color = redColor
                                 isAnyJointRed = true
@@ -172,6 +176,43 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                 }
 
+
+//                GlobalScope.launch {
+//                    withContext(Dispatchers.Default) {
+//                        var isConditionTrueForThreeSeconds = false // Flag variable
+//                        val timer = Timer()
+//
+//                        timer.schedule(object : TimerTask() {
+//                            override fun run() {
+//                                if (isAnyJointRed) {
+//                                    isConditionTrueForThreeSeconds = true
+//                                    // Pause video and play audio
+//                                    Log.i("isAnyJointRed", "Joint is red")
+//
+//                                } else {
+//                                    isConditionTrueForThreeSeconds = false
+//                                }
+//
+//                                isAnyJointRed = false // Reset the flag after each check
+//                            }
+//                        }, 0, 1000) // Check the condition every 1 second
+//
+//                        // Wait for three seconds
+//                        Thread.sleep(1000)
+//
+//                        // Cancel the timer
+//                        timer.cancel()
+//
+//                        if (isConditionTrueForThreeSeconds) {
+//                            // The condition was true for more than three seconds
+//                            overlayViewListener?.onOverlayViewPause()
+//                        } else {
+//                            // The condition was not true for more than three seconds
+//                            overlayViewListener?.onOverlayViewPlay()
+//                        }
+//                    }
+//                }
+
                 if (isAnyJointRed) {
                     //Pause video and play audio
                     Log.i("isAnyJointRed", "Joint is red")
@@ -184,6 +225,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
             }
         }
     }
+
 
     fun setJointList(jointPairs : List<Pair<Int, Int>>) {
         jointPairsList = jointPairs

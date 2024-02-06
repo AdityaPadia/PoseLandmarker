@@ -48,7 +48,6 @@ class ItemFragment : Fragment() {
         val uri = arguments?.getString("uri").toString()
         val pairList = arguments?.getString("pairs").toString()
 
-
 //        Log.i("pairsList after conversion", pairsList.toString())
 
 

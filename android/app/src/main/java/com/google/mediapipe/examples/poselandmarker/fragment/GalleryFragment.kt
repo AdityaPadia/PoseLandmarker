@@ -40,6 +40,8 @@ import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
@@ -62,8 +64,16 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var mediaUri = ""
     private var detectionComplete = false
     private var isVideoPaused = false
+    private var isVideoFinished = false
+    private var hasVideoBeenPaused = false
     private var isAudioPlaying = true
     private var systemClockTime:Long = 0
+    private var videoStartTimeMs:Long = 0
+    private var videoElapsedTimeMs: Long = 0
+    private var videoPauseStartTimeMs: Long = 0
+    private var totalPausedDurationMs: Long = 0
+    private var resultIndex: Int = 0
+    private var lastResultIndex: Int = 0
     private var mediaPlayer: MediaPlayer = MediaPlayer()
 
 
@@ -74,6 +84,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             // Handle the returned Uri
             uri?.let { mediaUri ->
+                Log.i("mediaUrigetContent", mediaUri.toString())
                 when (val mediaType = loadMediaType(mediaUri)) {
                     MediaType.IMAGE -> runDetectionOnImage(mediaUri)
                     MediaType.VIDEO -> runDetectionOnVideo(mediaUri)
@@ -97,26 +108,45 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         _fragmentGalleryBinding =
             FragmentGalleryBinding.inflate(inflater, container, false)
 
-        mediaUri = arguments?.getString("uri").toString()
-
-//        runDetectionOnVideo(Uri.parse(mediaUri))
 
         return fragmentGalleryBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+
+        mediaUri = arguments?.getString("uri").toString()
+
         super.onViewCreated(view, savedInstanceState)
+
+        initBottomSheetControls()
 
         //TODO : Add run detection on video here
 //        fragmentGalleryBinding.fabGetContent.visibility = View.GONE
+        Log.i("mediaUri", Uri.parse(mediaUri).toString())
+        Log.i("mediaUriType", loadMediaType(Uri.parse(mediaUri)).toString())
+
+
+
+        when (val mediaType = loadMediaType(Uri.parse(mediaUri))) {
+            MediaType.IMAGE -> runDetectionOnImage(Uri.parse(mediaUri))
+            MediaType.VIDEO -> runDetectionOnVideo(Uri.parse(mediaUri))
+            MediaType.UNKNOWN -> {
+                updateDisplayView(mediaType)
+                Toast.makeText(
+                    requireContext(),
+                    "Unsupported data type.",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
 
 
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
 
-        initBottomSheetControls()
-//        runDetectionOnVideo(Uri.parse(mediaUri))
+
+//        runDetectionOnVideo(Uri.parse("content://com.android.providers.media.documents/document/video%3A290079"))
     }
 
     override fun onPause() {
@@ -325,21 +355,31 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
     }
 
+//    fun isVideoFinished() : Boolean {
+//        fragmentGalleryBinding.videoView.setOnCompletionListener {
+//            isVideoFinished = true
+//        }
+//        return isVideoFinished
+//    }
+
     fun isVideoPlaying() : Boolean {
         return (fragmentGalleryBinding.videoView.isPlaying && detectionComplete)
     }
 
     fun pauseVideo() {
-        fragmentGalleryBinding.videoView.pause()
-        isVideoPaused = true
-        //Pause the system clock so that drawing does not proceed
-        systemClockTime = SystemClock.uptimeMillis()
-        Toast.makeText(
-            requireContext(),
-            "Posture out of sync.",
-            Toast.LENGTH_SHORT
-        ).show()
-
+        if (fragmentGalleryBinding.videoView.isPlaying) {
+            isVideoPaused = true
+            videoPauseStartTimeMs = SystemClock.uptimeMillis()
+            Log.i("videoPauseStartTimeMs", videoPauseStartTimeMs.toString())
+            fragmentGalleryBinding.videoView.pause()
+//            videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs
+//            lastResultIndex = resultIndex
+            Toast.makeText(
+                requireContext(),
+                "Posture out of sync.",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
         val afd = resources.openRawResourceFd(R.raw.postureoutofsync)
         mediaPlayer.reset()
         mediaPlayer.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
@@ -347,19 +387,24 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         mediaPlayer.start()
         afd.close()
 
-//        val resid = R.raw.postureoutofsync
-//        val mediaPlayer = MediaPlayer.create(activity, resid)
+        val resid = R.raw.postureoutofsync
+        val mediaPlayer = MediaPlayer.create(activity, resid)
         isAudioPlaying = true
         mediaPlayer?.start()
     }
 
     fun playVideo() {
-        mediaPlayer.setOnCompletionListener {
-            isAudioPlaying = false
+        if (isVideoPaused) {
+            totalPausedDurationMs += SystemClock.uptimeMillis() - videoPauseStartTimeMs
+            videoStartTimeMs = SystemClock.uptimeMillis() - videoElapsedTimeMs
             fragmentGalleryBinding.videoView.start()
-            //Unpause the drawing
-            isVideoPaused = false
+//            isVideoPaused = false
+//            Log.i("isVideoPaused", isVideoPaused.toString())
+//            resultIndex = lastResultIndex
+//            fragmentGalleryBinding.videoView.start()
         }
+        isVideoPaused = false
+
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
@@ -368,6 +413,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         updateDisplayView(MediaType.VIDEO)
 
         Log.d("runDetectionOnVideo", "Step 2")
+        Log.d("mediaUri2", Uri.parse(mediaUri).toString())
 
         with(fragmentGalleryBinding.videoView) {
             setVideoURI(Uri.parse(mediaUri))
@@ -443,60 +489,68 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.progress.visibility = View.GONE
 
         fragmentGalleryBinding.videoView.start()
-        val videoStartTimeMs = SystemClock.uptimeMillis()
-
+        var videoStartTimeMs = SystemClock.uptimeMillis()
+        var videoPausedTimeMs: Long = 0
+        var videoElapsedTimeMs: Long = 0
         backgroundExecutor.scheduleAtFixedRate(
             {
                 activity?.runOnUiThread {
-                    var videoElapsedTimeMs: Long
+
+                    Log.i("isVideoPausedInLoop", isVideoPaused.toString())
 
                     if (!isVideoPaused) {
-                        videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs
-                    }
-                    else {
-                        videoElapsedTimeMs = systemClockTime - videoStartTimeMs
+                        videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs - totalPausedDurationMs
+                        Log.i("videoElapsedTimeMs", videoElapsedTimeMs.toString())
+                    } else {
+
                     }
 
                     val resultIndex =
                         videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
 
                     if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
-                        // The video playback has finished so we stop drawing bounding boxes
-                        backgroundExecutor.shutdown()
-                    } else {
+                    // The video playback has finished so we stop drawing bounding boxes
+                    Log.i("resultIndex", "shutdown")
+                    Log.i("resultIndexSize", result.results.size.toString())
+                    backgroundExecutor.shutdown()
+                } else {
 
-                        val dataTransferInterface : DataTransfer = activity as DataTransfer
-                        if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
-                        {
-                            val videoVectorList = mutableListOf<LandmarkVector>()
+                    val dataTransferInterface : DataTransfer = activity as DataTransfer
+                    if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
+                    {
+                        val videoVectorList = mutableListOf<LandmarkVector>()
 
-                            for (pair in jointPairsList) {
-                                val landmark1 = pair.first
-                                val landmark2 = pair.second
-                                val videoVector = returnVideoVector(landmark1,landmark2, result.results[resultIndex].worldLandmarks()[0])
-                                videoVectorList.add(videoVector)
-                            }
-                            dataTransferInterface.transferVideoLandmarkVector(videoVectorList)
+                        for (pair in jointPairsList) {
+                            val landmark1 = pair.first
+                            val landmark2 = pair.second
+                            val videoVector = returnVideoVector(landmark1,landmark2, result.results[resultIndex].worldLandmarks()[0])
+                            videoVectorList.add(videoVector)
                         }
-
-                        fragmentGalleryBinding.overlay.setResults(
-                            result.results[resultIndex],
-                            result.inputImageHeight,
-                            result.inputImageWidth,
-                            RunningMode.VIDEO
-                        )
-
-                        setUiEnabled(true)
-
-                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
+                        dataTransferInterface.transferVideoLandmarkVector(videoVectorList)
                     }
+
+                    fragmentGalleryBinding.overlay.setResults(
+                        result.results[resultIndex],
+                        result.inputImageHeight,
+                        result.inputImageWidth,
+                        RunningMode.VIDEO
+                    )
+
+                    setUiEnabled(true)
+
+                    fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", result.inferenceTime)
+                }
                 }
             },
             0,
             VIDEO_INTERVAL_MS,
             TimeUnit.MILLISECONDS
         )
+
+        Log.i("isVideoPaused", "Out of Loop")
+
+        isVideoFinished = true
     }
 
     private fun updateDisplayView(mediaType: MediaType) {
@@ -560,12 +614,13 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         // no-op
+
     }
 
     companion object {
         private const val TAG = "GalleryFragment"
 
         // Value used to get frames at specific intervals for inference (e.g. every 300ms)
-        private const val VIDEO_INTERVAL_MS = 1000L
+        private const val VIDEO_INTERVAL_MS = 300L
     }
 }
