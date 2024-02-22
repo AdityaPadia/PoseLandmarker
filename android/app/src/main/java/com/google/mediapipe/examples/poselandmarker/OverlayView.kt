@@ -105,9 +105,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
         val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
 
-
-
-        results?.let { poseLandmarkerResult ->
+        customResults?.let { poseLandmarkerResult ->
             for(landmark in poseLandmarkerResult.landmarks()) {
 
                 for(normalizedLandmark in landmark) {

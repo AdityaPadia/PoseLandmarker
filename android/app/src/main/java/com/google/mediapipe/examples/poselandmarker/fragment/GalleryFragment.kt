@@ -87,7 +87,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 Log.i("mediaUrigetContent", mediaUri.toString())
                 when (val mediaType = loadMediaType(mediaUri)) {
                     MediaType.IMAGE -> runDetectionOnImage(mediaUri)
-                    MediaType.VIDEO -> runDetectionOnVideo(mediaUri)
+                    MediaType.VIDEO -> customRunDetectionOnVideo(mediaUri)
                     MediaType.UNKNOWN -> {
                         updateDisplayView(mediaType)
                         Toast.makeText(
