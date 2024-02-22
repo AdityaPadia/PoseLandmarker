@@ -401,7 +401,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentGalleryBinding.videoView.start()
                 isVideoPaused = false
             }
-
         }
 //        isVideoPaused = false
 
@@ -451,6 +450,57 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 ?.let { resultBundle ->
                     detectionComplete = true
                     activity?.runOnUiThread { displayVideoResult(resultBundle) }
+                }
+                ?: run { Log.e(TAG, "Error running pose landmarker.") }
+
+            poseLandmarkerHelper.clearPoseLandmarker()
+        }
+    }
+
+    private fun customRunDetectionOnVideo(uri: Uri) {
+        Log.d("runDetectionOnVideo", "Entered the function")
+        setUiEnabled(false)
+        updateDisplayView(MediaType.VIDEO)
+
+        Log.d("runDetectionOnVideo", "Step 2")
+        Log.d("mediaUri2", Uri.parse(mediaUri).toString())
+
+        with(fragmentGalleryBinding.videoView) {
+            setVideoURI(Uri.parse(mediaUri))
+            // mute the audio
+//            setOnPreparedListener { it.setVolume(0f, 0f) }
+            requestFocus()
+        }
+
+        Log.d("runDetectionOnVideo", "Step 3")
+
+        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+
+        Log.d("runDetectionOnVideo", "Step 4")
+        backgroundExecutor.execute {
+
+            poseLandmarkerHelper =
+                PoseLandmarkerHelper(
+                    context = requireContext(),
+                    runningMode = RunningMode.VIDEO,
+                    minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
+                    minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
+                    minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
+                    currentDelegate = viewModel.currentDelegate
+                )
+
+            activity?.runOnUiThread {
+                fragmentGalleryBinding.videoView.visibility = View.GONE
+                fragmentGalleryBinding.progress.visibility = View.VISIBLE
+            }
+
+            Log.d("runDetectionOnVideo", "Step 5")
+
+            //TODO : load resultBundle and display results
+            poseLandmarkerHelper.customDetectVideoFile(Uri.parse(mediaUri), VIDEO_INTERVAL_MS)
+                ?.let { customResultBundle ->
+                    detectionComplete = true
+                    activity?.runOnUiThread { customDisplayVideoResult(customResultBundle) }
                 }
                 ?: run { Log.e(TAG, "Error running pose landmarker.") }
 
@@ -541,6 +591,76 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
                         String.format("%d ms", result.inferenceTime)
                 }
+                }
+            },
+            0,
+            VIDEO_INTERVAL_MS,
+            TimeUnit.MILLISECONDS
+        )
+
+        Log.i("isVideoPaused", "Out of Loop")
+
+        isVideoFinished = true
+    }
+
+    private fun customDisplayVideoResult(result: PoseLandmarkerHelper.CustomResultBundle) {
+
+        fragmentGalleryBinding.videoView.visibility = View.VISIBLE
+        fragmentGalleryBinding.progress.visibility = View.GONE
+
+        fragmentGalleryBinding.videoView.start()
+        var videoStartTimeMs = SystemClock.uptimeMillis()
+        var videoPausedTimeMs: Long = 0
+        var videoElapsedTimeMs: Long = 0
+        backgroundExecutor.scheduleAtFixedRate(
+            {
+                activity?.runOnUiThread {
+
+                    Log.i("isVideoPausedInLoop", isVideoPaused.toString())
+
+                    if (!isVideoPaused) {
+                        videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs - totalPausedDurationMs
+                        Log.i("videoElapsedTimeMs", videoElapsedTimeMs.toString())
+                    } else {
+
+                    }
+
+                    val resultIndex =
+                        videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
+
+                    if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
+                        // The video playback has finished so we stop drawing bounding boxes
+                        Log.i("resultIndex", "shutdown")
+                        Log.i("resultIndexSize", result.results.size.toString())
+                        backgroundExecutor.shutdown()
+                    } else {
+
+                        val dataTransferInterface : DataTransfer = activity as DataTransfer
+                        if (result.results[resultIndex].worldLandmarks()[0].isNotEmpty())
+                        {
+                            val videoVectorList = mutableListOf<LandmarkVector>()
+
+                            for (pair in jointPairsList) {
+                                val landmark1 = pair.first
+                                val landmark2 = pair.second
+                                val videoVector = returnVideoVector(landmark1,landmark2, result.results[resultIndex].worldLandmarks()[0])
+                                videoVectorList.add(videoVector)
+                            }
+                            dataTransferInterface.transferVideoLandmarkVector(videoVectorList)
+                        }
+
+                        fragmentGalleryBinding.overlay.customSetResults(
+                            result.results[resultIndex],
+                            result.inputImageHeight,
+                            result.inputImageWidth,
+                            RunningMode.VIDEO
+                        )
+
+                        setUiEnabled(true)
+
+                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
+                            String.format("%d ms", result.inferenceTime)
+                    }
                 }
             },
             0,

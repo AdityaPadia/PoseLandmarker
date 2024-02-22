@@ -26,6 +26,8 @@ import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
 import com.google.gson.Gson
 import com.google.mediapipe.formats.proto.LandmarkProto
+import com.google.mediapipe.formats.proto.LandmarkProto.LandmarkList
+import com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.components.containers.Landmark
@@ -256,6 +258,7 @@ class PoseLandmarkerHelper(
 
         // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
         val resultList = mutableListOf<PoseLandmarkerResult>()
+        val customResultList = mutableListOf<CustomPoseLandmarkerResult>()
         val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
 
         Log.d("runDetectionOnVideo", "Step 8")
@@ -313,12 +316,164 @@ class PoseLandmarkerHelper(
         } else {
             Log.i("resultBundle", "Finished detection")
             val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+
+            Log.i("resultBundle", "Starting conversion")
+
+
+            val customResultList = ArrayList<CustomPoseLandmarkerResult>()
+            for (result in resultList) {
+
+                val customResult = CustomPoseLandmarkerResult.create(
+                    result.landmarks(),
+                    result.worldLandmarks(),
+                    result.segmentationMasks(),
+                    result.timestampMs()
+                )
+                customResultList.add(customResult)
+            }
+
+            val customResultBundle = CustomResultBundle(customResultList, inferenceIntervalMs, height, width)
+
+            Log.i("resultBundleCustom", "finished conversion to custom")
+            Log.i("resultBundleCustom", customResultBundle.results.toString())
+
 //            val gson = Gson()
 //            val jsonString = gson.toJson(resultBundle)
 //            Log.i("jsonString", jsonString.toString())
 //            Log.i("deserialization", "converting from json string to resultBundle2")
 //            val resultBundle2 = gson.fromJson(jsonString, ResultBundle::class.java)
+
             return resultBundle
+        }
+    }
+
+    fun customDetectVideoFile(
+        videoUri: Uri,
+        inferenceIntervalMs: Long
+    ): CustomResultBundle? {
+
+        Log.d("runDetectionOnVideo", "Inside customDetectVideoFile")
+
+        if (runningMode != RunningMode.VIDEO) {
+            throw IllegalArgumentException(
+                "Attempting to call detectVideoFile" +
+                        " while not using RunningMode.VIDEO"
+            )
+        }
+
+        Log.d("runDetectionOnVideo", "Step 7")
+
+        // Inference time is the difference between the system time at the start and finish of the
+        // process
+        val startTime = SystemClock.uptimeMillis()
+
+        var didErrorOccurred = false
+
+        // Load frames from the video and run the pose landmarker.
+        val retriever = MediaMetadataRetriever()
+        retriever.setDataSource(context, videoUri)
+        val videoLengthMs =
+            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLong()
+
+        // Note: We need to read width/height from frame instead of getting the width/height
+        // of the video directly because MediaRetriever returns frames that are smaller than the
+        // actual dimension of the video file.
+        val firstFrame = retriever.getFrameAtTime(0)
+        val width = firstFrame?.width
+        val height = firstFrame?.height
+
+        // If the video is invalid, returns a null detection result
+        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
+
+        // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
+        val resultList = mutableListOf<PoseLandmarkerResult>()
+        val customResultList = mutableListOf<CustomPoseLandmarkerResult>()
+        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
+
+        Log.d("runDetectionOnVideo", "Step 8")
+
+        Log.d("DetectVideo", "Loop to start detection")
+        for (i in 0..numberOfFrameToRead) {
+            val timestampMs = i * inferenceIntervalMs // ms
+
+            retriever
+                .getFrameAtTime(
+                    timestampMs * 1000, // convert from ms to micro-s
+                    MediaMetadataRetriever.OPTION_CLOSEST
+                )
+                ?.let { frame ->
+                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
+                    val argb8888Frame =
+                        if (frame.config == Bitmap.Config.ARGB_8888) frame
+                        else frame.copy(Bitmap.Config.ARGB_8888, false)
+
+                    // Convert the input Bitmap object to an MPImage object to run inference
+                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
+
+                    // Run pose landmarker using MediaPipe Pose Landmarker API
+                    poseLandmarker?.detectForVideo(mpImage, timestampMs)
+                        ?.let { detectionResult ->
+                            resultList.add(detectionResult)
+                        } ?: {
+                        didErrorOccurred = true
+                        poseLandmarkerHelperListener?.onError(
+                            "ResultBundle could not be returned" +
+                                    " in detectVideoFile"
+                        )
+                    }
+                }
+                ?: run {
+                    didErrorOccurred = true
+                    poseLandmarkerHelperListener?.onError(
+                        "Frame at specified time could not be" +
+                                " retrieved when detecting in video."
+                    )
+                }
+        }
+
+        retriever.release()
+
+        val inferenceTimePerFrameMs =
+            (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
+
+        Log.d("Completed Results", "Completed Results")
+
+
+
+        if (didErrorOccurred) {
+            return null
+        } else {
+            Log.i("resultBundle", "Finished detection")
+            val resultBundle = ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+
+            Log.i("resultBundle", "Starting conversion")
+
+
+            val customResultList = ArrayList<CustomPoseLandmarkerResult>()
+            for (result in resultList) {
+
+                val customResult = CustomPoseLandmarkerResult.create(
+                    result.landmarks(),
+                    result.worldLandmarks(),
+                    result.segmentationMasks(),
+                    result.timestampMs()
+                )
+                customResultList.add(customResult)
+            }
+
+            val customResultBundle = CustomResultBundle(customResultList, inferenceIntervalMs, height, width)
+
+            Log.i("resultBundleCustom", "finished conversion to custom")
+            Log.i("resultBundleCustom", customResultBundle.toString())
+
+//            val gson = Gson()
+//            val jsonString = gson.toJson(resultBundle)
+//            Log.i("jsonString", jsonString.toString())
+//            Log.i("deserialization", "converting from json string to resultBundle2")
+//            val resultBundle2 = gson.fromJson(jsonString, ResultBundle::class.java)
+
+            return customResultBundle
         }
     }
 
@@ -427,6 +582,13 @@ class PoseLandmarkerHelper(
         val inferenceTime: Long,
         val inputImageHeight: Int,
         val inputImageWidth: Int,
+    )
+
+    data class CustomResultBundle(
+        val results: List<CustomPoseLandmarkerResult>,
+        val inferenceTime: Long,
+        val inputImageHeight: Int,
+        val inputImageWidth: Int
     )
 
     interface LandmarkerListener {

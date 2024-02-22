@@ -50,6 +50,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
 
     private var results: PoseLandmarkerResult? = null
+    private var customResults: CustomPoseLandmarkerResult? = null
     private var pointPaint = Paint()
     private var linePaint = Paint()
 
@@ -71,6 +72,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     fun clear() {
         results = null
+        customResults = null
         pointPaint.reset()
         linePaint.reset()
         invalidate()
@@ -177,41 +179,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                 }
 
 
-//                GlobalScope.launch {
-//                    withContext(Dispatchers.Default) {
-//                        var isConditionTrueForThreeSeconds = false // Flag variable
-//                        val timer = Timer()
-//
-//                        timer.schedule(object : TimerTask() {
-//                            override fun run() {
-//                                if (isAnyJointRed) {
-//                                    isConditionTrueForThreeSeconds = true
-//                                    // Pause video and play audio
-//                                    Log.i("isAnyJointRed", "Joint is red")
-//
-//                                } else {
-//                                    isConditionTrueForThreeSeconds = false
-//                                }
-//
-//                                isAnyJointRed = false // Reset the flag after each check
-//                            }
-//                        }, 0, 1000) // Check the condition every 1 second
-//
-//                        // Wait for three seconds
-//                        Thread.sleep(1000)
-//
-//                        // Cancel the timer
-//                        timer.cancel()
-//
-//                        if (isConditionTrueForThreeSeconds) {
-//                            // The condition was true for more than three seconds
-//                            overlayViewListener?.onOverlayViewPause()
-//                        } else {
-//                            // The condition was not true for more than three seconds
-//                            overlayViewListener?.onOverlayViewPlay()
-//                        }
-//                    }
-//                }
 
                 if (isAnyJointRed) {
                     //Pause video and play audio
@@ -243,6 +210,32 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         runningMode: RunningMode = RunningMode.IMAGE
     ) {
         results = poseLandmarkerResults
+
+        this.imageHeight = imageHeight
+        this.imageWidth = imageWidth
+
+        scaleFactor = when (runningMode) {
+            RunningMode.IMAGE,
+            RunningMode.VIDEO -> {
+                min(width * 1f / imageWidth, height * 1f / imageHeight)
+            }
+            RunningMode.LIVE_STREAM -> {
+                // PreviewView is in FILL_START mode. So we need to scale up the
+                // landmarks to match with the size that the captured images will be
+                // displayed.
+                max(width * 1f / imageWidth, height * 1f / imageHeight)
+            }
+        }
+        invalidate()
+    }
+
+    fun customSetResults(
+        poseLandmarkerResults: CustomPoseLandmarkerResult,
+        imageHeight: Int,
+        imageWidth: Int,
+        runningMode: RunningMode = RunningMode.IMAGE
+    ) {
+        customResults = poseLandmarkerResults
 
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
