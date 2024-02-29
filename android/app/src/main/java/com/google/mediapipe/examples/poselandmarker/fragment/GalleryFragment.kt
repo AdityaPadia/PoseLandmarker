@@ -32,6 +32,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FileDownloadTask
+import com.google.firebase.storage.ktx.storage
 import com.google.mediapipe.examples.poselandmarker.DataTransfer
 import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
@@ -40,12 +45,13 @@ import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import java.io.File
+import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+
 
 class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -62,6 +68,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private val viewModel: MainViewModel by activityViewModels()
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var mediaUri = ""
+    private var dataUri = ""
     private var detectionComplete = false
     private var isVideoPaused = false
     private var isVideoFinished = false
@@ -115,38 +122,90 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
         mediaUri = arguments?.getString("uri").toString()
+        dataUri = arguments?.getString("dataUri").toString()
 
         super.onViewCreated(view, savedInstanceState)
 
         initBottomSheetControls()
 
         //TODO : Add run detection on video here
-//        fragmentGalleryBinding.fabGetContent.visibility = View.GONE
         Log.i("mediaUri", Uri.parse(mediaUri).toString())
-        Log.i("mediaUriType", loadMediaType(Uri.parse(mediaUri)).toString())
+
+        getVideoDataFromFirestore(dataUri)
 
 
 
-        when (val mediaType = loadMediaType(Uri.parse(mediaUri))) {
-            MediaType.IMAGE -> runDetectionOnImage(Uri.parse(mediaUri))
-            MediaType.VIDEO -> runDetectionOnVideo(Uri.parse(mediaUri))
-            MediaType.UNKNOWN -> {
-                updateDisplayView(mediaType)
-                Toast.makeText(
-                    requireContext(),
-                    "Unsupported data type.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
+//        when (val mediaType = loadMediaType(Uri.parse(mediaUri))) {
+//            MediaType.IMAGE -> runDetectionOnImage(Uri.parse(mediaUri))
+//            MediaType.VIDEO -> runDetectionOnVideo(Uri.parse(mediaUri))
+//            MediaType.UNKNOWN -> {
+//                updateDisplayView(mediaType)
+//                Toast.makeText(
+//                    requireContext(),
+//                    "Unsupported data type.",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+//            }
+//        }
 
 
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
+    }
+
+    private fun getVideoDataFromFirestore(dataUri: String) {
+
+        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+
+        with(fragmentGalleryBinding.videoView) {
+            setVideoURI(Uri.parse(mediaUri))
+            // mute the audio
+//            setOnPreparedListener { it.setVolume(0f, 0f) }
+            requestFocus()
+        }
 
 
-//        runDetectionOnVideo(Uri.parse("content://com.android.providers.media.documents/document/video%3A290079"))
+            Log.i("getVideoDataFromFirestore", dataUri)
+            val storage = Firebase.storage.reference
+            val fileRef = storage.child(dataUri)
+
+            val localFile: File = File.createTempFile("file", "txt")
+
+            fileRef.getFile(localFile)
+                .addOnSuccessListener(OnSuccessListener<FileDownloadTask.TaskSnapshot?> { // File downloaded successfully, proceed to read its contents
+                    val fileContents: String = localFile.readText()
+                    Log.i("fileContents", fileContents)
+
+                    poseLandmarkerHelper =
+                        PoseLandmarkerHelper(
+                            context = requireContext(),
+                            runningMode = RunningMode.VIDEO,
+                            minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
+                            minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
+                            minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
+                            currentDelegate = viewModel.currentDelegate
+                        )
+
+                    val customResultBundle = poseLandmarkerHelper.extractDataFromJsonString(fileContents)
+                    Log.i("fileContents", customResultBundle.toString())
+
+                    if (customResultBundle != null){
+                        detectionComplete = true
+                        activity?.runOnUiThread { customDisplayVideoResult(customResultBundle) }
+                    }
+                    else {
+                        Log.i("getVideoDataFromFirestore", "Could not getCustomResultBundle")
+                    }
+
+
+
+                    poseLandmarkerHelper.clearPoseLandmarker()
+                }).addOnFailureListener(OnFailureListener {
+                    // Handle any errors that occur during the file download
+                    Log.i("fileContents", it.toString())
+                })
+
     }
 
     override fun onPause() {

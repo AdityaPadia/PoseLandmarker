@@ -86,7 +86,7 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
         linePaint.color =
             blueColor
-        linePaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        linePaint.strokeWidth = 12F
         linePaint.style = Paint.Style.STROKE
 
         pointPaint.color = Color.YELLOW
@@ -104,6 +104,91 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         val blueColor = ContextCompat.getColor(context!!, R.color.mp_color_primary)
         val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
         val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
+
+        results?.let { poseLandmarkerResult ->
+            for(landmark in poseLandmarkerResult.landmarks()) {
+
+                for(normalizedLandmark in landmark) {
+                    canvas.drawPoint(
+                        normalizedLandmark.x() * imageWidth * scaleFactor,
+                        normalizedLandmark.y() * imageHeight * scaleFactor,
+                        pointPaint
+                    )
+                }
+                var isAnyJointRed = false
+
+                PoseLandmarker.POSE_LANDMARKS.forEach {
+
+                    val start = it.start()
+                    val end = it.end()
+
+
+                    if (jointPairsList.isNotEmpty())
+                    {
+//                        Log.i("jointPairsList", jointPairsList.toString())
+                        var isFound = false;
+                        var index = -1;
+
+                        for (i in jointPairsList.indices) {
+                            if ((jointPairsList[i].first == start && jointPairsList[i].second == end)) {
+                                isFound = true;
+                                index = i
+                                break;
+                            }
+                        }
+
+                        if (isFound && jointAngleList.isNotEmpty())
+                        {
+                            val angle = jointAngleList[index]
+                            if (angle < 30) {
+                                linePaint.color = blueColor
+                            }
+                            else if (angle >= 30 && angle < 60) {
+                                linePaint.color = yellowColor
+                            }
+                            else if (angle >= 60) {
+                                //Pause video and play audio
+                                linePaint.color = redColor
+                                isAnyJointRed = true
+                                Log.i("Color", "$start, $end joint color is red")
+                            }
+                        }
+                        else {
+                            linePaint.color = blueColor
+                        }
+
+                        canvas.drawLine(
+                            poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                            linePaint)
+                    }
+                    else
+                    {
+                        canvas.drawLine(
+                            poseLandmarkerResult.landmarks().get(0).get(it!!.start()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.start()).y() * imageHeight * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).x() * imageWidth * scaleFactor,
+                            poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
+                            linePaint)
+                    }
+
+                }
+
+
+
+                if (isAnyJointRed) {
+                    //Pause video and play audio
+                    Log.i("isAnyJointRed", "Joint is red")
+                    overlayViewListener?.onOverlayViewPause()
+
+                } else {
+                    Log.i("isAnyJointRed", "Joint is not red")
+                    overlayViewListener?.onOverlayViewPlay()
+                }
+            }
+        }
 
         customResults?.let { poseLandmarkerResult ->
             for(landmark in poseLandmarkerResult.landmarks()) {

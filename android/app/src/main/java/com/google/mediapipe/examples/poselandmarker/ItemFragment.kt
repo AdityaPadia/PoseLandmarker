@@ -46,6 +46,7 @@ class ItemFragment : Fragment() {
         tvTitle.text = arguments?.getString("exerciseName")
         tvDescription.text = arguments?.getString("exerciseDescription")
         val uri = arguments?.getString("uri").toString()
+        val dataUri = arguments?.getString("dataUri").toString()
         val pairList = arguments?.getString("pairs").toString()
         val imageResID = arguments?.getString("imageResID")?.toInt()
 
@@ -57,6 +58,7 @@ class ItemFragment : Fragment() {
             Log.i("URI", uri)
             Intent(context, VideoCameraActivity::class.java).also {
                 it.putExtra("uri", uri)
+                it.putExtra("dataUri", dataUri)
                 it.putExtra("pairList", pairList)
                 startActivity(it)
             }

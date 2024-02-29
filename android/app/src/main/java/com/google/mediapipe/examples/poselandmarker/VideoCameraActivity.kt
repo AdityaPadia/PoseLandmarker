@@ -20,6 +20,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
     private var videoVectorList = mutableListOf<LandmarkVector?>()
     private var livestreamVectorList = mutableListOf<LandmarkVector?>()
     private var uri = ""
+    private var dataUri = ""
     private var pairs = mutableListOf<Pair<Int, Int>>()
 
     private val cameraFragment = CameraFragment()
@@ -78,7 +79,10 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
         val args = intent.extras
         if (args != null) {
             uri = args.getString("uri").toString()
+            dataUri = args.getString("dataUri").toString()
             val pairList = args.getString("pairList")
+            Log.i("dataUri", uri.toString())
+            Log.i("dataUri", dataUri.toString())
             Log.i("pairList", pairList.toString())
             val pairsList = this.parsePairlist(pairList)
 
@@ -93,13 +97,6 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
 
         val videoFragmentLayout = findViewById<ConstraintLayout>(R.id.videoFragmentLayout)
         val cameraFragmentLayout = findViewById<ConstraintLayout>(R.id.cameraFragmentLayout)
-
-
-//        Pair of relevant joint IDs that need to be monitored
-//        pairs = mutableListOf(
-//            Pair(13, 15),
-//            Pair(14, 16)
-//        )
 
         Log.i("Video Camera Activity Pairs", pairs.toString())
 
@@ -120,7 +117,10 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
 
     private fun replaceVideoFragment(fragment: Fragment, id: Int) {
         val bundle = Bundle()
+
         bundle.putString("uri", uri)
+        bundle.putString("dataUri", dataUri)
+
         fragment.arguments = bundle
         val transaction: FragmentTransaction = fragmentManager.beginTransaction()
         transaction.replace(id, fragment)

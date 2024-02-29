@@ -24,10 +24,8 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.ImageProxy
-import com.google.gson.Gson
-import com.google.mediapipe.formats.proto.LandmarkProto
-import com.google.mediapipe.formats.proto.LandmarkProto.LandmarkList
-import com.google.mediapipe.formats.proto.LandmarkProto.NormalizedLandmarkList
+import com.google.gson.GsonBuilder
+import com.google.gson.InstanceCreator
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.components.containers.Landmark
@@ -37,6 +35,10 @@ import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import org.json.JSONObject
+import java.lang.reflect.Type
+import java.util.Optional
+
 
 class PoseLandmarkerHelper(
     var minPoseDetectionConfidence: Float = DEFAULT_POSE_DETECTION_CONFIDENCE,
@@ -463,18 +465,139 @@ class PoseLandmarkerHelper(
             }
 
             val customResultBundle = CustomResultBundle(customResultList, inferenceIntervalMs, height, width)
+            val customResultBundleString = CustomResultBundle(customResultList, inferenceIntervalMs, height, width).toString()
 
-            Log.i("resultBundleCustom", "finished conversion to custom")
-            Log.i("resultBundleCustom", customResultBundle.toString())
+            val gsonBuilder = GsonBuilder()
+            gsonBuilder.registerTypeAdapter(CustomResultBundle::class.java, CustomResultBundleInstanceCreator())
 
-//            val gson = Gson()
-//            val jsonString = gson.toJson(resultBundle)
-//            Log.i("jsonString", jsonString.toString())
-//            Log.i("deserialization", "converting from json string to resultBundle2")
-//            val resultBundle2 = gson.fromJson(jsonString, ResultBundle::class.java)
+            val gson = gsonBuilder.create()
+            val jsonCustomResultBundle = gson.toJson(customResultBundle)
 
-            return customResultBundle
+            longLog(jsonCustomResultBundle.toString())
+
+            val customResultBundle2 = extractDataFromJsonString(jsonCustomResultBundle)
+            return customResultBundle2
         }
+    }
+
+    fun extractDataFromJsonString(jsonCustomResultBundle: String?): CustomResultBundle? {
+
+        val jsonObject = JSONObject(jsonCustomResultBundle)
+        val resultsArray = jsonObject.getJSONArray("results")
+        val inferenceTime = jsonObject.getLong("inferenceTime")
+        val inputImageHeight = jsonObject.getInt("inputImageHeight")
+        val inputImageWidth = jsonObject.getInt("inputImageWidth")
+        val resultList = mutableListOf<CustomPoseLandmarkerResult>()
+
+        Log.i("extractDataFromString", inferenceTime.toString())
+        Log.i("extractDataFromString", inputImageHeight.toString())
+        Log.i("extractDataFromString", inputImageWidth.toString())
+        Log.i("extractDataFromString", resultsArray.length().toString())
+
+        for (i in 0 until resultsArray.length()) {
+            val resultObject = resultsArray.getJSONObject(i)
+            Log.i("extractDataFromString", resultObject.toString())
+
+            // Extract the "landmarks" array
+            val landmarksArray = resultObject.getJSONArray("landmarks")
+            val landmarks: MutableList<List<NormalizedLandmark>> =
+                ArrayList<List<NormalizedLandmark>>()
+
+            Log.i("extractDataFromString", landmarksArray.toString())
+
+            // Iterate over the "landmarks" array and convert each inner array
+            for (j in 0 until landmarksArray.length()) {
+                val innerArray = landmarksArray.getJSONArray(j)
+                Log.i("extractDataFromString", innerArray.toString())
+                val innerList: MutableList<NormalizedLandmark> = ArrayList<NormalizedLandmark>()
+
+                // Convert each inner array into a list of NormalizedLandmark objects
+                for (k in 0 until innerArray.length()) {
+                    val landmarkObject = innerArray.getJSONObject(k)
+                    Log.i("extractDataFromString", landmarkObject.toString())
+                    val x = landmarkObject.getDouble("x")
+                    val y = landmarkObject.getDouble("y")
+                    val z = landmarkObject.getDouble("z")
+                    val landmark = NormalizedLandmark.create(x.toFloat(), y.toFloat(), z.toFloat())
+                    innerList.add(landmark)
+                }
+                landmarks.add(innerList)
+            }
+
+            // Extract the "worldLandmarks" array
+            val worldLandmarksArray = resultObject.getJSONArray("worldLandmarks")
+            val worldLandmarks: MutableList<List<Landmark>> = ArrayList()
+            Log.i("extractDataFromString", worldLandmarksArray.toString())
+
+            // Iterate over the "worldLandmarks" array and convert each inner array
+            for (j in 0 until worldLandmarksArray.length()) {
+                val innerArray = worldLandmarksArray.getJSONArray(j)
+                Log.i("extractDataFromString", innerArray.toString())
+                val innerList: MutableList<Landmark> = ArrayList()
+
+                // Convert each inner array into a list of Landmark objects
+                for (k in 0 until innerArray.length()) {
+                    val landmarkObject = innerArray.getJSONObject(k)
+                    Log.i("extractDataFromString", landmarkObject.toString())
+                    val x = landmarkObject.getDouble("x")
+                    val y = landmarkObject.getDouble("y")
+                    val z = landmarkObject.getDouble("z")
+                    val landmark = Landmark.create(x.toFloat(), y.toFloat(), z.toFloat())
+                    innerList.add(landmark)
+                }
+                worldLandmarks.add(innerList)
+            }
+
+            // Extract the "segmentationMasks" array if present
+            var segmentationMasksData: Optional<List<MPImage?>> = Optional.empty()
+//                if (resultObject.has("segmentationMasks")) {
+//                val segmentationMasksArray = resultObject.getJSONObject("segmentationMasks")
+//                val segmentationMasks: List<MPImage> = ArrayList()
+//
+//                // Convert each segmentation mask object into an MPImage object
+//                for (j in 0 until segmentationMasksArray.length()) {
+//                    val maskObject = segmentationMasksArray.getJSONObject(j)
+//                    // Parse the MPImage properties and create an MPImage object
+//                    // Add the MPImage object to the segmentationMasks list
+//                }
+//                Optional.of(segmentationMasks)
+//            } else {
+//                Optional.empty()
+//            }
+
+            Log.i("extractDataFromString", segmentationMasksData.toString())
+
+            // Extract the "timestampMs" value
+            val timestampMs = resultObject.getLong("timestampMs")
+            Log.i("extractDataFromString", timestampMs.toString())
+
+            // Create a new CustomPoseLandmarkerResult object using the extracted values
+            val result = CustomPoseLandmarkerResult.create(
+                landmarks,
+                worldLandmarks,
+                segmentationMasksData,
+                timestampMs
+            )
+
+            // Add the CustomPoseLandmarkerResult object to the resultList
+            resultList.add(result)
+        }
+
+        Log.i("extractDataFromString", CustomResultBundle(
+            resultList,
+            inferenceTime,
+            inputImageHeight,
+            inputImageWidth,
+        ).toString()
+        )
+
+        return CustomResultBundle(
+            resultList,
+            inferenceTime,
+            inputImageHeight,
+            inputImageWidth,
+        )
+
     }
 
     // Accepted a Bitmap and runs pose landmarker inference on it to return
@@ -561,6 +684,13 @@ class PoseLandmarkerHelper(
         )
     }
 
+    fun longLog(str: String) {
+        if (str.length > 1000) {
+            Log.d("jsonCustomResultBundle", str.substring(0, 1000))
+            longLog(str.substring(1000))
+        } else Log.d("jsonCustomResultBundle", str)
+    }
+
     companion object {
         const val TAG = "PoseLandmarkerHelper"
 
@@ -590,6 +720,17 @@ class PoseLandmarkerHelper(
         val inputImageHeight: Int,
         val inputImageWidth: Int
     )
+
+    class CustomResultBundleInstanceCreator : InstanceCreator<CustomResultBundle> {
+        override fun createInstance(type: Type): CustomResultBundle {
+            return CustomResultBundle(
+                listOf(),
+                0L,
+                0,
+                0
+            )
+        }
+    }
 
     interface LandmarkerListener {
         fun onError(error: String, errorCode: Int = OTHER_ERROR)

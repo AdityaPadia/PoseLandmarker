@@ -73,6 +73,11 @@ public abstract class CustomPoseLandmarkerResult implements TaskResult {
                 segmentationMasksData);
     }
 
+//    static CustomPoseLandmarkerResult create(String customPoseLandmarkerResultString) {
+//
+//    }
+
+
     public abstract long timestampMs();
 
     public abstract List<List<NormalizedLandmark>> landmarks();
