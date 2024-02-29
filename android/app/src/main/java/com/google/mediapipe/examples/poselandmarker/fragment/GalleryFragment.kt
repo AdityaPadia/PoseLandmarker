@@ -155,7 +155,8 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun getVideoDataFromFirestore(dataUri: String) {
-
+        fragmentGalleryBinding.tvPlaceholder.visibility = View.GONE
+        fragmentGalleryBinding.progress.visibility = View.VISIBLE
         backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
 
         with(fragmentGalleryBinding.videoView) {
@@ -675,11 +676,11 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             {
                 activity?.runOnUiThread {
 
-                    Log.i("isVideoPausedInLoop", isVideoPaused.toString())
+//                    Log.i("isVideoPausedInLoop", isVideoPaused.toString())
 
                     if (!isVideoPaused) {
                         videoElapsedTimeMs = SystemClock.uptimeMillis() - videoStartTimeMs - totalPausedDurationMs
-                        Log.i("videoElapsedTimeMs", videoElapsedTimeMs.toString())
+//                        Log.i("videoElapsedTimeMs", videoElapsedTimeMs.toString())
                     } else {
 
                     }
@@ -689,8 +690,8 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                     if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
                         // The video playback has finished so we stop drawing bounding boxes
-                        Log.i("resultIndex", "shutdown")
-                        Log.i("resultIndexSize", result.results.size.toString())
+//                        Log.i("resultIndex", "shutdown")
+//                        Log.i("resultIndexSize", result.results.size.toString())
                         backgroundExecutor.shutdown()
                     } else {
 
@@ -716,9 +717,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         )
 
                         setUiEnabled(true)
-
-                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
                     }
                 }
             },
