@@ -1,6 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker
 
-import android.net.Uri
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
@@ -10,11 +10,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
 import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
-import java.util.Queue
 import kotlin.math.acos
 import kotlin.math.sqrt
 
-class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
+class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, MistakesCounterInterface {
 
     private lateinit var fragmentManager: FragmentManager
     private var videoVectorList = mutableListOf<LandmarkVector?>()
@@ -22,6 +21,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
     private var uri = ""
     private var dataUri = ""
     private var pairs = mutableListOf<Pair<Int, Int>>()
+    private var mistakesCounter = 0
 
     private val cameraFragment = CameraFragment()
     private val galleryFragment = GalleryFragment()
@@ -81,7 +81,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
             uri = args.getString("uri").toString()
             dataUri = args.getString("dataUri").toString()
             val pairList = args.getString("pairList")
-            Log.i("dataUri", uri.toString())
+            Log.i("uri", uri.toString())
             Log.i("dataUri", dataUri.toString())
             Log.i("pairList", pairList.toString())
             val pairsList = this.parsePairlist(pairList)
@@ -208,8 +208,6 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
     }
 
     override fun transferVideoLandmarkVector(landmarkVectorList: List<LandmarkVector?>) {
-//        Log.i("VideoVector", landmarkVector.toString())
-
         //Set values
         val newVideoVectorList = mutableListOf<LandmarkVector?>()
 
@@ -240,8 +238,11 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
         Log.i("Sync Interface", "Pause Video")
 
         if (galleryFragment.isVideoPlaying()) {
+            mistakesCounter++
+            Log.i("mistakesCounter", mistakesCounter.toString())
             pauseVideo()
         }
+
     }
 
     override fun onVideoPlay() {
@@ -249,6 +250,18 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface {
 
         if (!galleryFragment.isVideoPlaying()) {
             playVideo()
+        }
+    }
+    override fun processExerciseFinished() {
+        Log.i("mistakesCounter", mistakesCounter.toString())
+        val durationMs = galleryFragment.getVideoLength().toFloat()
+        Log.i("mistakesCounterDurationSeconds", durationMs.toString())
+        val durationMinutes = durationMs/60000f;
+        Log.i("mistakesCounterDurationMinutes", durationMinutes.toString())
+        val mistakesPerMinute = mistakesCounter / durationMinutes
+        Intent(applicationContext, ExercisePerformanceActivity::class.java).also {
+            it.putExtra("mistakesPerMinute", mistakesPerMinute.toString())
+            startActivity(it)
         }
     }
 }

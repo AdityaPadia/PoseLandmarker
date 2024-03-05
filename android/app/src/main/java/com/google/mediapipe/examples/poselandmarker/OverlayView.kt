@@ -125,7 +125,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                     if (jointPairsList.isNotEmpty())
                     {
-//                        Log.i("jointPairsList", jointPairsList.toString())
                         var isFound = false;
                         var index = -1;
 
@@ -210,7 +209,6 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                     if (jointPairsList.isNotEmpty())
                     {
-//                        Log.i("jointPairsList", jointPairsList.toString())
                         var isFound = false;
                         var index = -1;
 

@@ -19,6 +19,7 @@ import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.media.MediaPlayer
 import android.net.Uri
+import android.opengl.Visibility
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -40,8 +41,10 @@ import com.google.firebase.storage.ktx.storage
 import com.google.mediapipe.examples.poselandmarker.DataTransfer
 import com.google.mediapipe.examples.poselandmarker.LandmarkVector
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
+import com.google.mediapipe.examples.poselandmarker.MistakesCounterInterface
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.R
+import com.google.mediapipe.examples.poselandmarker.VideoCameraActivity
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -72,16 +75,13 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var detectionComplete = false
     private var isVideoPaused = false
     private var isVideoFinished = false
-    private var hasVideoBeenPaused = false
     private var isAudioPlaying = true
-    private var systemClockTime:Long = 0
     private var videoStartTimeMs:Long = 0
     private var videoElapsedTimeMs: Long = 0
     private var videoPauseStartTimeMs: Long = 0
     private var totalPausedDurationMs: Long = 0
-    private var resultIndex: Int = 0
-    private var lastResultIndex: Int = 0
     private var mediaPlayer: MediaPlayer = MediaPlayer()
+    private var mistakesCounterInterface: MistakesCounterInterface? = null
 
 
     /** Blocking ML operations are performed using this executor */
@@ -124,6 +124,10 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         mediaUri = arguments?.getString("uri").toString()
         dataUri = arguments?.getString("dataUri").toString()
 
+        fragmentGalleryBinding.fabGetContent.visibility = View.GONE
+
+        mistakesCounterInterface = context as? MistakesCounterInterface
+
         super.onViewCreated(view, savedInstanceState)
 
         initBottomSheetControls()
@@ -132,22 +136,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         Log.i("mediaUri", Uri.parse(mediaUri).toString())
 
         getVideoDataFromFirestore(dataUri)
-
-
-
-//        when (val mediaType = loadMediaType(Uri.parse(mediaUri))) {
-//            MediaType.IMAGE -> runDetectionOnImage(Uri.parse(mediaUri))
-//            MediaType.VIDEO -> runDetectionOnVideo(Uri.parse(mediaUri))
-//            MediaType.UNKNOWN -> {
-//                updateDisplayView(mediaType)
-//                Toast.makeText(
-//                    requireContext(),
-//                    "Unsupported data type.",
-//                    Toast.LENGTH_SHORT
-//                ).show()
-//            }
-//        }
-
 
         fragmentGalleryBinding.fabGetContent.setOnClickListener {
             getContent.launch(arrayOf("image/*", "video/*"))
@@ -462,8 +450,11 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 isVideoPaused = false
             }
         }
-//        isVideoPaused = false
 
+    }
+
+    fun getVideoLength(): Int {
+        return fragmentGalleryBinding.videoView.duration
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
@@ -672,6 +663,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         var videoStartTimeMs = SystemClock.uptimeMillis()
         var videoPausedTimeMs: Long = 0
         var videoElapsedTimeMs: Long = 0
+
         backgroundExecutor.scheduleAtFixedRate(
             {
                 activity?.runOnUiThread {
@@ -690,8 +682,9 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                     if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
                         // The video playback has finished so we stop drawing bounding boxes
-//                        Log.i("resultIndex", "shutdown")
-//                        Log.i("resultIndexSize", result.results.size.toString())
+                        isVideoFinished = true
+                        Log.i("mistakesCounter", "calling processExerciseFinished()")
+                        mistakesCounterInterface?.processExerciseFinished()
                         backgroundExecutor.shutdown()
                     } else {
 
@@ -727,7 +720,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         Log.i("isVideoPaused", "Out of Loop")
 
-        isVideoFinished = true
     }
 
     private fun updateDisplayView(mediaType: MediaType) {

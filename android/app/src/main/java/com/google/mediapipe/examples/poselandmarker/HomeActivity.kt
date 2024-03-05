@@ -31,7 +31,7 @@ class HomeActivity : AppCompatActivity() {
             1,
             "Isotonic Flexion",
             "Shoulder and Arm Strengthening Exercise",
-            "android.resource://$packageName/${R.raw.isotonic_flexsion}",
+            "android.resource://$packageName/${R.raw.isotonic_flexion}",
             "isotonicFlexion.txt",
             R.raw.arms,
             listOf(
