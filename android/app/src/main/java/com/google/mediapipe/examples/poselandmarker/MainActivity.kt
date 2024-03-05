@@ -57,12 +57,14 @@ class MainActivity : AppCompatActivity() {
             Log.d("LOGIN : ","User is logged in")
             Intent(this, HomeActivity::class.java).also{
                 startActivity(it)
+                finish()
             }
         }
         else {
             Log.d("LOGIN : ", "User is not logged in")
             Intent(this, LoginActivity::class.java).also {
                 startActivity(it)
+                finish()
             }
         }
     }

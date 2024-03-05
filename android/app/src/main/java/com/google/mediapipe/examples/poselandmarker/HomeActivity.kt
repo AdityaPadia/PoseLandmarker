@@ -146,4 +146,8 @@ class HomeActivity : AppCompatActivity() {
 
         fragmentTransaction.commit()
     }
+
+    override fun onBackPressed() {
+        finish()
+    }
 }

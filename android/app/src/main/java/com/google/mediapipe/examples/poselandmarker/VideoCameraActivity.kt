@@ -262,6 +262,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
         Intent(applicationContext, ExercisePerformanceActivity::class.java).also {
             it.putExtra("mistakesPerMinute", mistakesPerMinute.toString())
             startActivity(it)
+            finish()
         }
     }
 }
