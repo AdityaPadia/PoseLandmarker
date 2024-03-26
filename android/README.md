@@ -1,10 +1,8 @@
-# MediaPipe Tasks Pose Landmark Detection Android Demo
+# PhysioFit Demo
 
 ### Overview
-
-This is a camera app that can detects landmarks on a person either from continuous camera frames seen by your device's back camera, an image, or a video from the device's gallery using a custom **task** file.
-
-The task file is downloaded by a Gradle script when you build and run the app. You don't need to do any additional steps to download task files into the project explicitly unless you wish to use your own landmark detection task. If you do use your own task file, place it into the app's *assets* directory.
+This is an app that detects pose landmarks on a person from a continuous camera frames seen by your device's front camera and a pre-recorded video of a physiotherapy workout. The pose landmarks are compared in real-time to provide visual and voice feedback to the user performing the exercise.
+The pose landmarker model used is developed my MediaPipe by Google. 
 
 This application should be run on a physical Android device to take advantage of the camera.
 
