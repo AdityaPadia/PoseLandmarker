@@ -6,8 +6,8 @@ The pose landmarker model used is developed my MediaPipe by Google.
 
 This application should be run on a physical Android device to take advantage of the camera.
 
-![Pose Landmarker Demo](pose_landmarker.png?raw=true "Pose Landmarker Demo")
-[Public domain video from Lance Foss](https://www.youtube.com/watch?v=KALIKOd1pbA)
+![Pose Landmarker Demo](pose_landmarker.jpeg?raw=true "Pose Landmarker Demo")
+![Flowchart](flowchart.png?raw=true "Pipeline")
 
 ## Build the demo using Android Studio
 
