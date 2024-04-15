@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.Button
 import android.widget.RatingBar
 import android.widget.TextView
+import kotlin.math.*
 
 class ExercisePerformanceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,14 +31,15 @@ class ExercisePerformanceActivity : AppCompatActivity() {
             Log.i("mistakesPerMinute", mistakesPerMinute)
             Log.i("mistakesPerMinuteFloat", mistakesPerMinute.toFloat().toString())
 
+            val mistakesPerMinuteFloat = max(mistakesPerMinute.toFloat(), 0.0f);
 
-            if (mistakesPerMinute.toFloat() <= 4) {
+            if (mistakesPerMinuteFloat <= 4) {
                 ratingBar.rating = 5F
-            } else if (mistakesPerMinute.toFloat() > 4 && mistakesPerMinute.toFloat() <= 8) {
+            } else if (mistakesPerMinuteFloat > 4 && mistakesPerMinuteFloat <= 8) {
                 ratingBar.rating = 4F
-            } else if (mistakesPerMinute.toFloat() > 8 && mistakesPerMinute.toFloat() <= 12) {
+            } else if (mistakesPerMinuteFloat > 8 && mistakesPerMinuteFloat <= 12) {
                 ratingBar.rating = 3F
-            } else if (mistakesPerMinute.toFloat() > 12 && mistakesPerMinute.toFloat() <= 16) {
+            } else if (mistakesPerMinuteFloat > 12 && mistakesPerMinuteFloat <= 16) {
                 ratingBar.rating = 2F
             } else {
                 ratingBar.rating = 1F
