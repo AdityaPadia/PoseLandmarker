@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -17,13 +18,11 @@
         android:weightSum="10"
         >
 
-
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clTopPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="4"
+        android:layout_weight="3"
         android:backgroundTint="#F2F2F2"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,13 +45,12 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="6"
+            android:layout_weight="7"
+            app:layout_constraintTop_toBottomOf="@id/clTopPanel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.961"
             app:layout_constraintStart_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/clTopPanel">
-
+        >
             <TextView
                 android:id="@+id/tvWelcomeBack"
                 android:layout_width="match_parent"
@@ -76,26 +74,34 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvWelcomeBack" />
 
-            <ScrollView
-                android:id="@+id/scrollView"
+
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvYourExercises">
+                app:layout_constraintTop_toBottomOf="@+id/tvYourExercises"
+            >
 
-                <LinearLayout
-                    android:id="@+id/fragmentContainer"
+                <ScrollView
+                    android:id="@+id/scrollView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="start"
-                    android:orientation="vertical">
+                    android:layout_marginTop="30dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                >
 
-                </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/fragmentContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:orientation="vertical">
+                    </LinearLayout>
 
-            </ScrollView>
+                </ScrollView>
 
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

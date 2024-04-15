@@ -24,13 +24,12 @@ class HomeActivity : AppCompatActivity() {
         val bundle1 = Bundle()
         val bundle2 = Bundle()
         val bundle3 = Bundle()
-        val bundle5 = Bundle()
         val bundle4 = Bundle()
 
         val exercise1 = Exercise(
             1,
             "Isotonic Flexion",
-            "Shoulder and Arm Strengthening Exercise",
+            "Low-impact movement for strengthening muscles and joints",
             "android.resource://$packageName/${R.raw.isotonic_flexion}",
             "isotonicFlexion.txt",
             R.raw.arms,
@@ -46,7 +45,7 @@ class HomeActivity : AppCompatActivity() {
         val exercise2 = Exercise(
             2,
             "Isotonic Scaption",
-            "Shoulder and Arm Strengthening Exercise",
+            "Shoulder-strengthening exercise with free-hand movement",
             "android.resource://$packageName/${R.raw.isotonic_scaption}",
             "isotonicScaption.txt",
             R.raw.arms,
@@ -61,10 +60,10 @@ class HomeActivity : AppCompatActivity() {
 
 
 
-        val exercise4 = Exercise(
-            4,
+        val exercise3 = Exercise(
+            3,
             "Hip Internal Rotation",
-            "Hip Internal Rotation",
+            "Strengthens hip muscles, improves range of motion",
             "android.resource://$packageName/${R.raw.hip_internal_rotation}",
             "hipInternalRotation.txt",
             R.raw.legs,
@@ -78,10 +77,10 @@ class HomeActivity : AppCompatActivity() {
             null
         )
 
-        val exercise5 = Exercise(
-            5,
+        val exercise4 = Exercise(
+            4,
             "Short Arc Quad",
-            "Leg Strengthening Exercise",
+            "Strengthens quadriceps, improves knee stability",
             "android.resource://$packageName/${R.raw.short_arc_quad}",
             "shortArcQuad.txt",
             R.raw.legs,
@@ -122,6 +121,17 @@ class HomeActivity : AppCompatActivity() {
         fragmentTransaction.add(R.id.fragmentContainer, fragment2)
 
 
+        bundle3.putString("exerciseName", exercise3.name)
+        bundle3.putString("exerciseDescription", exercise3.description)
+        bundle3.putString("uri", exercise3.uri)
+        bundle3.putString("dataUri", exercise3.dataUri)
+        bundle3.putString("pairs", exercise3.pairs.toString())
+        bundle3.putString("imageResID", exercise3.resID.toString())
+
+        val fragment3 = ItemFragment()
+        fragment3.arguments = bundle3
+        fragmentTransaction.add(R.id.fragmentContainer, fragment3)
+
         bundle4.putString("exerciseName", exercise4.name)
         bundle4.putString("exerciseDescription", exercise4.description)
         bundle4.putString("uri", exercise4.uri)
@@ -133,16 +143,9 @@ class HomeActivity : AppCompatActivity() {
         fragment4.arguments = bundle4
         fragmentTransaction.add(R.id.fragmentContainer, fragment4)
 
-        bundle5.putString("exerciseName", exercise5.name)
-        bundle5.putString("exerciseDescription", exercise5.description)
-        bundle5.putString("uri", exercise5.uri)
-        bundle5.putString("dataUri", exercise5.dataUri)
-        bundle5.putString("pairs", exercise5.pairs.toString())
-        bundle5.putString("imageResID", exercise5.resID.toString())
-
-        val fragment5 = ItemFragment()
-        fragment5.arguments = bundle5
-        fragmentTransaction.add(R.id.fragmentContainer, fragment5)
+//        val fragment5 = ItemFragment()
+//        fragment5.arguments = bundle4
+//        fragmentTransaction.add(R.id.fragmentContainer, fragment5)
 
         fragmentTransaction.commit()
     }
