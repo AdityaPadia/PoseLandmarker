@@ -1,13 +1,19 @@
 package com.google.mediapipe.examples.poselandmarker
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.RatingBar
 import android.widget.TextView
-import kotlin.math.*
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import kotlin.math.max
+
 
 class ExercisePerformanceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +34,8 @@ class ExercisePerformanceActivity : AppCompatActivity() {
 
         if (args != null) {
             val mistakesPerMinute = args.getString("mistakesPerMinute").toString()
+            val exerciseName = args.getString("exerciseName").toString()
+            Log.i("exerciseName", exerciseName)
             Log.i("mistakesPerMinute", mistakesPerMinute)
             Log.i("mistakesPerMinuteFloat", mistakesPerMinute.toFloat().toString())
 
@@ -44,11 +52,34 @@ class ExercisePerformanceActivity : AppCompatActivity() {
             } else {
                 ratingBar.rating = 1F
             }
-
-            
             val tvExerciseCounter = findViewById<TextView>(R.id.tvMistakesCounter)
-            tvExerciseCounter.text = mistakesPerMinute
+            tvExerciseCounter.text = mistakesPerMinuteFloat.toString()
+
+            uploadPerformanceDataToFirestore(mistakesPerMinuteFloat.toInt(), exerciseName)
         }
+    }
+
+    private fun uploadPerformanceDataToFirestore(mistakesPerMinuteFloat: Int, exerciseName : String) {
+        val exerciseCollectionRef = Firebase.firestore.collection("Exercise Performance Collection")
+
+        val currentFirebaseUser = FirebaseAuth.getInstance().currentUser
+        val uid = currentFirebaseUser!!.uid
+
+        val data = hashMapOf(
+            "exerciseName" to exerciseName,
+            "performance" to mistakesPerMinuteFloat,
+            "timestamp" to Timestamp.now(),
+            "user_id" to uid
+        )
+
+        exerciseCollectionRef
+            .add(data)
+            .addOnSuccessListener { documentReference ->
+                Log.d("Firestore Upload", "DocumentSnapshot written with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.w("Firestore Upload", "Error adding document", e)
+            }
     }
 
     override fun onBackPressed() {
