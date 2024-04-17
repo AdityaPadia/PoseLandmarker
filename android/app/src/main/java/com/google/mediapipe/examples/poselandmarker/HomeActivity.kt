@@ -143,9 +143,16 @@ class HomeActivity : AppCompatActivity() {
         fragment4.arguments = bundle4
         fragmentTransaction.add(R.id.fragmentContainer, fragment4)
 
-//        val fragment5 = ItemFragment()
-//        fragment5.arguments = bundle4
-//        fragmentTransaction.add(R.id.fragmentContainer, fragment5)
+        bundle4.putString("exerciseName", exercise4.name)
+        bundle4.putString("exerciseDescription", exercise4.description)
+        bundle4.putString("uri", exercise4.uri)
+        bundle4.putString("dataUri", exercise4.dataUri)
+        bundle4.putString("pairs", exercise4.pairs.toString())
+        bundle4.putString("imageResID", exercise4.resID.toString())
+
+        val fragment5 = ItemFragment()
+        fragment5.arguments = bundle4
+        fragmentTransaction.add(R.id.fragmentContainer, fragment5)
 
         fragmentTransaction.commit()
     }

@@ -45,6 +45,7 @@ class ItemFragment : Fragment() {
 
         tvTitle.text = arguments?.getString("exerciseName")
         tvDescription.text = arguments?.getString("exerciseDescription")
+        val exerciseName = arguments?.getString("exerciseName").toString()
         val uri = arguments?.getString("uri").toString()
         val dataUri = arguments?.getString("dataUri").toString()
         val pairList = arguments?.getString("pairs").toString()
@@ -60,6 +61,7 @@ class ItemFragment : Fragment() {
                 it.putExtra("uri", uri)
                 it.putExtra("dataUri", dataUri)
                 it.putExtra("pairList", pairList)
+                it.putExtra("exerciseName", exerciseName)
                 startActivity(it)
             }
         }

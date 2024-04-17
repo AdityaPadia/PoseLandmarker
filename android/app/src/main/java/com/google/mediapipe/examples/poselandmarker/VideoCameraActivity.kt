@@ -18,6 +18,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
     private lateinit var fragmentManager: FragmentManager
     private var videoVectorList = mutableListOf<LandmarkVector?>()
     private var livestreamVectorList = mutableListOf<LandmarkVector?>()
+    private var exerciseName = ""
     private var uri = ""
     private var dataUri = ""
     private var pairs = mutableListOf<Pair<Int, Int>>()
@@ -80,7 +81,10 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
         if (args != null) {
             uri = args.getString("uri").toString()
             dataUri = args.getString("dataUri").toString()
+            exerciseName = args.getString("exerciseName").toString()
             val pairList = args.getString("pairList")
+
+            Log.i("exerciseName", exerciseName.toString())
             Log.i("uri", uri.toString())
             Log.i("dataUri", dataUri.toString())
             Log.i("pairList", pairList.toString())
@@ -261,6 +265,7 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
         val mistakesPerMinute = mistakesCounter / durationMinutes
         Intent(applicationContext, ExercisePerformanceActivity::class.java).also {
             it.putExtra("mistakesPerMinute", mistakesPerMinute.toString())
+            it.putExtra("exerciseName", exerciseName)
             startActivity(it)
             finish()
         }
