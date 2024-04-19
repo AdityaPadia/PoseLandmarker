@@ -106,8 +106,9 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
 
         cameraFragment.setJointList(pairs)
         galleryFragment.setJointList(pairs)
-
         cameraFragment.setSyncInterface(this)
+
+
 
         replaceCameraFragment(cameraFragment, cameraFragmentLayout.id)
         replaceVideoFragment(galleryFragment, videoFragmentLayout.id)

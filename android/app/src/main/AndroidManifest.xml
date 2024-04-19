@@ -16,6 +16,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
         <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ExercisePerformanceActivity"
             android:exported="false" />
         <activity

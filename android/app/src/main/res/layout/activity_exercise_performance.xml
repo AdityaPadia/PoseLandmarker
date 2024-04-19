@@ -52,26 +52,28 @@
                 android:id="@+id/tvExerciseCompleted"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="92dp"
+                android:gravity="center"
+                android:padding="10dp"
                 android:text="Exercise Completed!"
                 android:textSize="22dp"
-                android:padding="10dp"
-                android:gravity="center"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-            />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <RatingBar
                 android:id="@+id/ratingBar"
-                android:isIndicator="true"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toBottomOf="@id/tvExerciseCompleted"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="12dp"
+                android:isIndicator="true"
                 android:numStars="5"
-                android:stepSize="1"
                 android:progressTint="@color/mp_color_secondary"
-            />
+                android:stepSize="1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.502"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvExerciseCompleted" />
 
             <TextView
                 android:id="@+id/tvMistakesCounter"
@@ -87,12 +89,14 @@
                 android:id="@+id/btnGoHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Continue"
                 android:layout_margin="20dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginBottom="72dp"
+                android:text="Continue"
                 app:layout_constraintBottom_toBottomOf="parent"
-            />
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.498"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvMistakesCounter" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

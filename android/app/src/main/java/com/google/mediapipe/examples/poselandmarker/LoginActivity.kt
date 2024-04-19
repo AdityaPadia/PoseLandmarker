@@ -42,15 +42,15 @@ class LoginActivity : AppCompatActivity() {
             finish()
         }
 
-        val signInButton = findViewById<SignInButton>(R.id.googleSignInButton)
-        signInButton.setSize(SignInButton.SIZE_WIDE)
-        signInButton.setOnClickListener {
-            signIn()
+        val googleSignInButton = findViewById<SignInButton>(R.id.googleSignInButton)
+        googleSignInButton.setSize(SignInButton.SIZE_WIDE)
+        googleSignInButton.setOnClickListener {
+            googleSignIn()
         }
 
     }
 
-    private fun signIn() {
+    private fun googleSignIn() {
         val signInIntent = googleSignInClient.signInIntent
         launcher.launch(signInIntent)
     }

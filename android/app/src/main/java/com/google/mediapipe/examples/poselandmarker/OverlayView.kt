@@ -338,5 +338,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     companion object {
         private const val LANDMARK_STROKE_WIDTH = 12F
+
+        //Easy Mode Thresholds
+        private const val BLUE_EASY_THRESHOLD = 60
+        private const val RED_EASY_THRESHOLD = 100
+
+        private const val BLUE_MED_THRESHOLD = 45
+        private const val RED_MED_THRESHOLD = 90
+
+        private const val BLUE_HARD_THRESHOLD = 30
+        private const val RED_HARD_THRESHOLD = 60
     }
 }

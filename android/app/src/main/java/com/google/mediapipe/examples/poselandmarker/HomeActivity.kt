@@ -1,11 +1,14 @@
 package com.google.mediapipe.examples.poselandmarker
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import org.checkerframework.common.subtyping.qual.Bottom
 
 class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,6 +18,30 @@ class HomeActivity : AppCompatActivity() {
         val tvWelcomeBack = findViewById<TextView>(R.id.tvWelcomeBack)
         val sharedPref: SharedPreferences = getSharedPreferences("userprefs", Context.MODE_PRIVATE)
         val name = sharedPref.getString("name", "")
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        bottomNav.selectedItemId = R.id.home_activity
+
+        bottomNav.setOnItemSelectedListener {
+            when(it.itemId) {
+                R.id.home_activity -> {
+                    true
+                }
+                R.id.profile_activity -> {
+                    Intent(this, ProfileActivity::class.java).also {
+                        startActivity(it)
+                    }
+                    overridePendingTransition(com.google.android.material.R.anim.m3_side_sheet_enter_from_right, com.google.android.material.R.anim.m3_side_sheet_exit_to_left)
+
+
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+
+
 
         tvWelcomeBack.text = "Welcome $name!"
 
@@ -48,7 +75,7 @@ class HomeActivity : AppCompatActivity() {
             "Shoulder-strengthening exercise with free-hand movement",
             "android.resource://$packageName/${R.raw.isotonic_scaption}",
             "isotonicScaption.txt",
-            R.raw.arms,
+            R.raw.shoulders,
             listOf(
                 Pair(12, 14),
                 Pair(11, 13),
