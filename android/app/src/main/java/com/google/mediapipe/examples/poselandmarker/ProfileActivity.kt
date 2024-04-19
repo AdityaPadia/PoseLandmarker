@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -27,6 +28,23 @@ class ProfileActivity : AppCompatActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.selectedItemId = R.id.profile_activity
 
+        val signOutButton = findViewById<Button>(R.id.signOutButton)
+
+        signOutButton.setOnClickListener {
+            //Clear Shared Preferences
+            getSharedPreferences("userprefs", Context.MODE_PRIVATE).edit().clear().apply()
+
+            //Sign Out
+            FirebaseAuth.getInstance().signOut()
+
+            //Go to Main Activity
+            Intent(this, MainActivity::class.java).also {
+                startActivity(it)
+            }
+            finish()
+            true
+        }
+
 
         val tvName = findViewById<TextView>(R.id.tvName)
         val sharedPref: SharedPreferences = getSharedPreferences("userprefs", Context.MODE_PRIVATE)
@@ -37,6 +55,7 @@ class ProfileActivity : AppCompatActivity() {
         val rbEasy = findViewById<RadioButton>(R.id.rbEasy)
         val rbMedium = findViewById<RadioButton>(R.id.rbMedium)
         val rbHard = findViewById<RadioButton>(R.id.rbHard)
+
 
 
         //Set the difficulty in shared preferences to maintain a global state of the application
