@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.marginRight
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -39,18 +40,31 @@ class ProfileActivity : AppCompatActivity() {
 
 
         //Set the difficulty in shared preferences to maintain a global state of the application
+        // 1 : Easy
+        // 2 : Medium
+        // 3 : Hard
+
         rgDifficulty.setOnCheckedChangeListener { _, id ->
-            if (id == rbEasy.id) {
+            when (id) {
+                rbEasy.id -> {
+                    sharedPref.edit().remove("difficulty")
+                    sharedPref.edit().putInt("difficulty", 1).apply()
+                    Toast.makeText(this, "Difficulty Set to Easy", Toast.LENGTH_SHORT).show()
 
-            }
-            else if (id == rbMedium.id) {
-
-            }
-            else if (id == rbHard.id) {
-
-            }
-            else {
-                Log.i("RadioGroup Error", "id does not match existing ids")
+                }
+                rbMedium.id -> {
+                    sharedPref.edit().remove("difficulty")
+                    sharedPref.edit().putInt("difficulty", 2).apply()
+                    Toast.makeText(this, "Difficulty Set to Medium", Toast.LENGTH_SHORT).show()
+                }
+                rbHard.id -> {
+                    sharedPref.edit().remove("difficulty")
+                    sharedPref.edit().putInt("difficulty", 3).apply()
+                    Toast.makeText(this, "Difficulty Set to Hard", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Log.i("RadioGroup Error", "id does not match existing ids")
+                }
             }
         }
 
@@ -134,5 +148,10 @@ class ProfileActivity : AppCompatActivity() {
             .addOnFailureListener { exception ->
                 Log.w("getUsersPerformanceData ", exception)
             }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
     }
 }

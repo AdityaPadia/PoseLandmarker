@@ -32,8 +32,6 @@ class HomeActivity : AppCompatActivity() {
                         startActivity(it)
                     }
                     overridePendingTransition(com.google.android.material.R.anim.m3_side_sheet_enter_from_right, com.google.android.material.R.anim.m3_side_sheet_exit_to_left)
-
-
                     finish()
                     true
                 }

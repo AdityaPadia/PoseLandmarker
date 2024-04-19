@@ -39,6 +39,7 @@ import java.util.Timer
 import java.util.TimerTask
 import kotlin.math.max
 import kotlin.math.min
+import android.content.SharedPreferences
 
 
 interface OverlayViewListener {
@@ -61,6 +62,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     private var jointPairsList = listOf<Pair<Int, Int>>()
     private var jointAngleList = listOf<Float>()
 
+    private var threshold1: Int = BLUE_EASY_THRESHOLD
+    private var threshold2: Int = RED_EASY_THRESHOLD
+
     private var isRed = false
     private var redTimer: Timer? = null
 
@@ -80,9 +84,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     }
 
     private fun initPaints() {
+
+        getDifficulty()
+
+        Log.i("Exercise Difficulty", threshold1.toString())
+        Log.i("Exercise Difficulty", threshold2.toString())
+
         val blueColor = ContextCompat.getColor(context!!, R.color.mp_color_primary)
-        val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
-        val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
+//        val yellowColor = ContextCompat.getColor(context!!, R.color.mp_color_secondary)
+//        val redColor = ContextCompat.getColor(context!!, R.color.mp_color_error)
 
         linePaint.color =
             blueColor
@@ -92,6 +102,29 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         pointPaint.color = Color.YELLOW
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
         pointPaint.style = Paint.Style.FILL
+    }
+
+    private fun getDifficulty() {
+        val appContext = context.applicationContext
+        val sharedPref: SharedPreferences = appContext.getSharedPreferences("userprefs", Context.MODE_PRIVATE)
+        val difficulty = sharedPref.getInt("difficulty", 0)
+
+        Log.i("Exercise Difficulty", difficulty.toString())
+
+        if (difficulty == 0 || difficulty == 1) { //If not set or easy -> set to easy
+            threshold1 = BLUE_EASY_THRESHOLD
+            threshold2 = RED_EASY_THRESHOLD
+        }
+        else if (difficulty == 2) {
+            threshold1 = BLUE_MED_THRESHOLD
+            threshold2 = RED_MED_THRESHOLD
+        }
+        else {
+            threshold1 = BLUE_HARD_THRESHOLD
+            threshold2 = RED_HARD_THRESHOLD
+        }
+
+
     }
 
     fun setOverlayViewListener(listener: OverlayViewListener) {
@@ -138,14 +171,15 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
                         if (isFound && jointAngleList.isNotEmpty())
                         {
+
                             val angle = jointAngleList[index]
-                            if (angle < 30) {
+                            if (angle < threshold1) {
                                 linePaint.color = blueColor
                             }
-                            else if (angle >= 30 && angle < 60) {
+                            else if (angle >= threshold1 && angle < threshold2) {
                                 linePaint.color = yellowColor
                             }
-                            else if (angle >= 60) {
+                            else if (angle >= threshold2) {
                                 //Pause video and play audio
                                 linePaint.color = redColor
                                 isAnyJointRed = true
