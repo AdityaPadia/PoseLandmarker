@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.marginRight
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
@@ -35,7 +36,14 @@ class ProfileActivity : AppCompatActivity() {
             getSharedPreferences("userprefs", Context.MODE_PRIVATE).edit().clear().apply()
 
             //Sign Out
-            FirebaseAuth.getInstance().signOut()
+            try {
+                Firebase.auth.signOut()
+            } catch (e: Exception) {
+                Log.i("Sign Out", "Sign out failed")
+            }
+
+
+
 
             //Go to Main Activity
             Intent(this, MainActivity::class.java).also {
@@ -49,12 +57,32 @@ class ProfileActivity : AppCompatActivity() {
         val tvName = findViewById<TextView>(R.id.tvName)
         val sharedPref: SharedPreferences = getSharedPreferences("userprefs", Context.MODE_PRIVATE)
         val name = sharedPref.getString("name", "")
-        tvName.text = "Hello $name!"
+
+        // "null" check for display name to prevent "Hello null!"
+        if (name != "null") {
+            tvName.text = "Hello $name!"
+        }
+        else {
+            tvName.text = "Hello!"
+        }
+
 
         val rgDifficulty = findViewById<RadioGroup>(R.id.rgDifficulty)
         val rbEasy = findViewById<RadioButton>(R.id.rbEasy)
         val rbMedium = findViewById<RadioButton>(R.id.rbMedium)
         val rbHard = findViewById<RadioButton>(R.id.rbHard)
+
+        val difficulty = sharedPref.getInt("difficulty", 0)
+
+        if (difficulty == 0 || difficulty == 1) { //If not set or easy -> set to easy
+            rgDifficulty.check(rbEasy.id)
+        }
+        else if (difficulty == 2) {
+            rgDifficulty.check(rbMedium.id)
+        }
+        else if (difficulty == 3) {
+            rgDifficulty.check(rbHard.id)
+        }
 
 
 

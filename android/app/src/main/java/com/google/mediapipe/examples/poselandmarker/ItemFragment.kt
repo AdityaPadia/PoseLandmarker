@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,17 +11,43 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class SetupCameraDialogFragment : DialogFragment() {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return activity?.let {
+            // Use the Builder class for convenient dialog construction.
+            val builder = AlertDialog.Builder(it)
+            builder.setTitle("Camera Setup")
+            builder.setMessage("Please make sure that your body is visible in the frame to perform the exercise")
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ItemFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+                .setPositiveButton("Start") { dialog, id ->
+
+                    dialog.dismiss()
+
+                    // Start the video camera activity
+//                    Intent(context, VideoCameraActivity::class.java).also {
+//                        it.putExtra("uri", uri)
+//                        it.putExtra("dataUri", dataUri)
+//                        it.putExtra("pairList", pairList)
+//                        it.putExtra("exerciseName", exerciseName)
+//                        startActivity(it)
+//                    }
+
+
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+
+                    // User cancelled the dialog.
+                }
+            // Create the AlertDialog object and return it.
+            builder.create()
+        } ?: throw IllegalStateException("Activity cannot be null")
+    }
+}
+
+
 class ItemFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -27,10 +55,11 @@ class ItemFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    }
+
+    private fun showCameraSetupDialog() {
+//        val dialog = SetupCameraDialogFragment()
+//        dialog.show(parentFragmentManager, "Setup Camera Dialog Fragment")
     }
 
     override fun onCreateView(
@@ -56,7 +85,10 @@ class ItemFragment : Fragment() {
         }
 
         view.setOnClickListener {
+            showCameraSetupDialog()
+
             Log.i("URI", uri)
+
             Intent(context, VideoCameraActivity::class.java).also {
                 it.putExtra("uri", uri)
                 it.putExtra("dataUri", dataUri)
@@ -70,22 +102,6 @@ class ItemFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ItemFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ItemFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+
     }
 }

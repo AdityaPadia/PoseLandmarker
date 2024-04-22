@@ -1,14 +1,18 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.checkerframework.common.subtyping.qual.Bottom
+
 
 class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,9 +43,13 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        // "null" check for display name to prevent "Hello null!"
+        if (name != "null") {
+            tvWelcomeBack.text = "Welcome $name!"
+        } else {
+            tvWelcomeBack.text = "Welcome!"
+        }
 
-
-        tvWelcomeBack.text = "Welcome $name!"
 
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
