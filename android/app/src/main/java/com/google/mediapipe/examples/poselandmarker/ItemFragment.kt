@@ -45,9 +45,6 @@ class SetupCameraDialogFragment : DialogFragment() {
 
 
 class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogListener {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +61,6 @@ class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogList
         val uri = arguments?.getString("uri").toString()
         val dataUri = arguments?.getString("dataUri").toString()
         val pairList = arguments?.getString("pairs").toString()
-        val imageResID = arguments?.getString("imageResID")?.toInt()
 
         Log.i("URI", uri)
 
@@ -89,10 +85,7 @@ class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogList
 
         tvTitle.text = arguments?.getString("exerciseName")
         tvDescription.text = arguments?.getString("exerciseDescription")
-        val exerciseName = arguments?.getString("exerciseName").toString()
-        val uri = arguments?.getString("uri").toString()
-        val dataUri = arguments?.getString("dataUri").toString()
-        val pairList = arguments?.getString("pairs").toString()
+
         val imageResID = arguments?.getString("imageResID")?.toInt()
 
         if (imageResID != null) {
@@ -101,16 +94,6 @@ class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogList
 
         view.setOnClickListener {
             showCameraSetupDialog()
-//
-//            Log.i("URI", uri)
-//
-//            Intent(context, VideoCameraActivity::class.java).also {
-//                it.putExtra("uri", uri)
-//                it.putExtra("dataUri", dataUri)
-//                it.putExtra("pairList", pairList)
-//                it.putExtra("exerciseName", exerciseName)
-//                startActivity(it)
-//            }
         }
 
         return view
