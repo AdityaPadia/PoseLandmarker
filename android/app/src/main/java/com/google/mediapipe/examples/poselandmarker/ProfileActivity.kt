@@ -12,24 +12,31 @@ import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.marginRight
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 
 class ProfileActivity : AppCompatActivity() {
 
     private var exerciseNames = HashSet<String>()
+    private lateinit var barChart : BarChart
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottomNav.selectedItemId = R.id.profile_activity
-
+        barChart = findViewById<BarChart>(R.id.barChart)
         val signOutButton = findViewById<Button>(R.id.signOutButton)
+
 
         signOutButton.setOnClickListener {
             //Clear Shared Preferences
@@ -162,13 +169,17 @@ class ProfileActivity : AppCompatActivity() {
 
                 //Update the ScrollView
                 for (exerciseName in exerciseNames) {
-                    val tv = TextView(this)
-                    tv.text = exerciseName
-                    tv.textSize = 18F
-                    tv.setPadding(30, 30, 30, 30)
-                    tv.background = getDrawable(R.drawable.your_progression_textview_background)
+                    val tvExercise = TextView(this)
+                    tvExercise.text = exerciseName
+                    tvExercise.textSize = 18F
+                    tvExercise.setPadding(30, 30, 30, 30)
+                    tvExercise.background = getDrawable(R.drawable.your_progression_textview_background)
 
-                    llYourProgression.addView(tv)
+                    tvExercise.setOnClickListener {
+                        getDataForThisExercise(exerciseName)
+                    }
+
+                    llYourProgression.addView(tvExercise)
                 }
 
             }
@@ -177,26 +188,45 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
 
-
-    //Go to Firebase and get all performance data of the user with this user UID
-    private fun getUsersPerformanceData() {
+    private fun getDataForThisExercise(exerciseName: String) {
         val exerciseCollectionRef = Firebase.firestore.collection("Exercise Performance Collection")
-        val currentFirebaseUser = FirebaseAuth.getInstance().currentUser
+        val currentFirebaseUser = Firebase.auth.currentUser
         val uid = currentFirebaseUser!!.uid
+        val barEntries: ArrayList<BarEntry> = ArrayList()
 
         exerciseCollectionRef
             .whereEqualTo("user_id", uid)
+            .whereEqualTo("exerciseName", exerciseName)
+            .orderBy("timestamp", Query.Direction.ASCENDING)
             .get()
             .addOnSuccessListener { documents ->
+                var i = 0
                 for (document in documents) {
-                    Log.d("getUsersPerformanceData", "${document.id} => ${document.data}")
+
+                    val performance = document.data["performance"] as Long
+                    val timestamp = document.data["timestamp"] as Timestamp
+
+                    barEntries.add(
+                        BarEntry(
+                            i++.toFloat(),
+                            performance.toFloat()
+                        )
+                    )
                 }
+
+                Log.i("getThisUserExercise", barEntries.toString())
+                val barDataSet =  BarDataSet(barEntries)
+                barDataSet.setDrawValues(false)
+                barChart.data = BarData(barDataSet)
+                barChart.animateY(1000)
+                barChart.description.text = exerciseName
             }
             .addOnFailureListener { exception ->
-                Log.w("getUsersPerformanceData ", exception)
+                Log.w("getThisUserExercise ", exception)
             }
-    }
 
+
+    }
     override fun onBackPressed() {
         super.onBackPressed()
         finish()

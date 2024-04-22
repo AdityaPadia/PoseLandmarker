@@ -123,4 +123,7 @@ dependencies {
 
     //Bottom Toolbar
     implementation 'com.google.android.material:material:1.11.0'
+
+    //Charts
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 }
