@@ -403,13 +403,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             }
     }
 
-//    fun isVideoFinished() : Boolean {
-//        fragmentGalleryBinding.videoView.setOnCompletionListener {
-//            isVideoFinished = true
-//        }
-//        return isVideoFinished
-//    }
-
     fun isVideoPlaying() : Boolean {
         return (fragmentGalleryBinding.videoView.isPlaying && detectionComplete)
     }

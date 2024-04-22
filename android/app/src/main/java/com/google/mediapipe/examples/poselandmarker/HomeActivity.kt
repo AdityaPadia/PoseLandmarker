@@ -1,11 +1,18 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import org.checkerframework.common.subtyping.qual.Bottom
+
 
 class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,7 +23,33 @@ class HomeActivity : AppCompatActivity() {
         val sharedPref: SharedPreferences = getSharedPreferences("userprefs", Context.MODE_PRIVATE)
         val name = sharedPref.getString("name", "")
 
-        tvWelcomeBack.text = "Welcome $name!"
+        val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
+        bottomNav.selectedItemId = R.id.home_activity
+
+        bottomNav.setOnItemSelectedListener {
+            when(it.itemId) {
+                R.id.home_activity -> {
+                    true
+                }
+                R.id.profile_activity -> {
+                    Intent(this, ProfileActivity::class.java).also {
+                        startActivity(it)
+                    }
+                    overridePendingTransition(com.google.android.material.R.anim.m3_side_sheet_enter_from_right, com.google.android.material.R.anim.m3_side_sheet_exit_to_left)
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // "null" check for display name to prevent "Hello null!"
+        if (name != "null") {
+            tvWelcomeBack.text = "Welcome $name!"
+        } else {
+            tvWelcomeBack.text = "Welcome!"
+        }
+
 
         val fragmentManager = supportFragmentManager
         val fragmentTransaction = fragmentManager.beginTransaction()
@@ -48,7 +81,7 @@ class HomeActivity : AppCompatActivity() {
             "Shoulder-strengthening exercise with free-hand movement",
             "android.resource://$packageName/${R.raw.isotonic_scaption}",
             "isotonicScaption.txt",
-            R.raw.arms,
+            R.raw.shoulders,
             listOf(
                 Pair(12, 14),
                 Pair(11, 13),
@@ -158,6 +191,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
+        super.onBackPressed()
         finish()
     }
 }

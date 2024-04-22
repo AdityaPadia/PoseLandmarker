@@ -44,6 +44,7 @@
         >
 
             <TextView
+                android:id="@+id/tvPhysioFit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="24dp"
@@ -55,14 +56,67 @@
                 android:text="PhysioFit"
             />
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="E-mail"
+                app:layout_constraintTop_toBottomOf="@id/tvPhysioFit"
+                android:layout_marginVertical="20dp"
+                android:layout_marginHorizontal="20dp"
+            />
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Password"
+                android:inputType="textPassword"
+                app:layout_constraintTop_toBottomOf="@id/etEmail"
+                android:layout_marginVertical="20dp"
+                android:layout_marginHorizontal="20dp"
+            />
+
+            <LinearLayout
+                android:id="@+id/llButtonRack"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:weightSum="2"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toBottomOf="@id/etPassword"
+            >
+
+                <Button
+                    android:id="@+id/btnRegister"
+                    android:text="Register"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginRight="5dp"
+                    android:layout_height="wrap_content"
+                />
+
+                <Button
+                    android:id="@+id/btnSignIn"
+                    android:text="Sign In"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="5dp"
+                    android:layout_height="wrap_content"
+                />
+
+            </LinearLayout>
+
             <com.google.android.gms.common.SignInButton
                 android:id="@+id/googleSignInButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/llButtonRack"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginVertical="20dp"
+                android:layout_marginHorizontal="20dp"
             />
 
 

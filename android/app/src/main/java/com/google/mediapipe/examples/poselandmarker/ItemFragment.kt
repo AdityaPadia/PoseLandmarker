@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -9,27 +11,69 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.DialogFragment
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class SetupCameraDialogFragment : DialogFragment() {
+    interface CameraSetupDialogListener {
+        fun onPositiveClick()
+    }
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ItemFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ItemFragment : Fragment() {
+    private var listener: CameraSetupDialogListener? = null
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        return activity?.let {
+            // Use the Builder class for convenient dialog construction.
+            val builder = AlertDialog.Builder(it)
+            builder.setTitle("Camera Setup")
+            builder.setMessage("Please make sure that your body is visible in the frame to perform the exercise")
+
+                .setPositiveButton("Start") { dialog, id ->
+                    dialog.dismiss()
+                    listener?.onPositiveClick()
+                }
+                .setNegativeButton("Cancel") { dialog, id ->
+                    dialog.dismiss()
+                }
+            // Create the AlertDialog object and return it.
+            builder.create()
+        } ?: throw IllegalStateException("Activity cannot be null")
+    }
+
+    fun setCameraSetupDialogListener(listener: CameraSetupDialogListener) {
+        this.listener = listener
+    }
+}
+
+
+class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+    }
+
+    private fun showCameraSetupDialog() {
+        val dialogFragment = SetupCameraDialogFragment()
+        dialogFragment.setCameraSetupDialogListener(this)
+        dialogFragment.show(parentFragmentManager, "Setup Camera Dialog Fragment")
+    }
+
+    override fun onPositiveClick() {
+        val exerciseName = arguments?.getString("exerciseName").toString()
+        val uri = arguments?.getString("uri").toString()
+        val dataUri = arguments?.getString("dataUri").toString()
+        val pairList = arguments?.getString("pairs").toString()
+        val imageResID = arguments?.getString("imageResID")?.toInt()
+
+        Log.i("URI", uri)
+
+        Intent(context, VideoCameraActivity::class.java).also {
+            it.putExtra("uri", uri)
+            it.putExtra("dataUri", dataUri)
+            it.putExtra("pairList", pairList)
+            it.putExtra("exerciseName", exerciseName)
+            startActivity(it)
         }
     }
 
@@ -56,36 +100,23 @@ class ItemFragment : Fragment() {
         }
 
         view.setOnClickListener {
-            Log.i("URI", uri)
-            Intent(context, VideoCameraActivity::class.java).also {
-                it.putExtra("uri", uri)
-                it.putExtra("dataUri", dataUri)
-                it.putExtra("pairList", pairList)
-                it.putExtra("exerciseName", exerciseName)
-                startActivity(it)
-            }
+            showCameraSetupDialog()
+//
+//            Log.i("URI", uri)
+//
+//            Intent(context, VideoCameraActivity::class.java).also {
+//                it.putExtra("uri", uri)
+//                it.putExtra("dataUri", dataUri)
+//                it.putExtra("pairList", pairList)
+//                it.putExtra("exerciseName", exerciseName)
+//                startActivity(it)
+//            }
         }
 
         return view
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ItemFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ItemFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+
     }
 }

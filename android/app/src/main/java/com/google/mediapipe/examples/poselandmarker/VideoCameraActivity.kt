@@ -1,10 +1,13 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -12,6 +15,8 @@ import com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment
 import com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment
 import kotlin.math.acos
 import kotlin.math.sqrt
+
+
 
 class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, MistakesCounterInterface {
 
@@ -106,8 +111,9 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
 
         cameraFragment.setJointList(pairs)
         galleryFragment.setJointList(pairs)
-
         cameraFragment.setSyncInterface(this)
+
+
 
         replaceCameraFragment(cameraFragment, cameraFragmentLayout.id)
         replaceVideoFragment(galleryFragment, videoFragmentLayout.id)

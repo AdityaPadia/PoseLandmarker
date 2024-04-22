@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.RatingBar
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -35,6 +33,7 @@ class ExercisePerformanceActivity : AppCompatActivity() {
         if (args != null) {
             val mistakesPerMinute = args.getString("mistakesPerMinute").toString()
             val exerciseName = args.getString("exerciseName").toString()
+
             Log.i("exerciseName", exerciseName)
             Log.i("mistakesPerMinute", mistakesPerMinute)
             Log.i("mistakesPerMinuteFloat", mistakesPerMinute.toFloat().toString())
@@ -52,14 +51,16 @@ class ExercisePerformanceActivity : AppCompatActivity() {
             } else {
                 ratingBar.rating = 1F
             }
-            val tvExerciseCounter = findViewById<TextView>(R.id.tvMistakesCounter)
-            tvExerciseCounter.text = mistakesPerMinuteFloat.toString()
 
-            uploadPerformanceDataToFirestore(mistakesPerMinuteFloat.toInt(), exerciseName)
+            //Display Mistakes Per Minute On Screen
+//            val tvExerciseCounter = findViewById<TextView>(R.id.tvMistakesCounter)
+//            tvExerciseCounter.text = mistakesPerMinuteFloat.toString()
+
+            uploadPerformanceDataToFirestore(ratingBar.rating.toInt(), exerciseName)
         }
     }
 
-    private fun uploadPerformanceDataToFirestore(mistakesPerMinuteFloat: Int, exerciseName : String) {
+    private fun uploadPerformanceDataToFirestore(rating: Int, exerciseName : String) {
         val exerciseCollectionRef = Firebase.firestore.collection("Exercise Performance Collection")
 
         val currentFirebaseUser = FirebaseAuth.getInstance().currentUser
@@ -67,7 +68,7 @@ class ExercisePerformanceActivity : AppCompatActivity() {
 
         val data = hashMapOf(
             "exerciseName" to exerciseName,
-            "performance" to mistakesPerMinuteFloat,
+            "performance" to rating,
             "timestamp" to Timestamp.now(),
             "user_id" to uid
         )
