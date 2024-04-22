@@ -14,6 +14,11 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 
 class SetupCameraDialogFragment : DialogFragment() {
+    interface CameraSetupDialogListener {
+        fun onPositiveClick()
+    }
+
+    private var listener: CameraSetupDialogListener? = null
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return activity?.let {
             // Use the Builder class for convenient dialog construction.
@@ -22,33 +27,24 @@ class SetupCameraDialogFragment : DialogFragment() {
             builder.setMessage("Please make sure that your body is visible in the frame to perform the exercise")
 
                 .setPositiveButton("Start") { dialog, id ->
-
                     dialog.dismiss()
-
-                    // Start the video camera activity
-//                    Intent(context, VideoCameraActivity::class.java).also {
-//                        it.putExtra("uri", uri)
-//                        it.putExtra("dataUri", dataUri)
-//                        it.putExtra("pairList", pairList)
-//                        it.putExtra("exerciseName", exerciseName)
-//                        startActivity(it)
-//                    }
-
-
+                    listener?.onPositiveClick()
                 }
                 .setNegativeButton("Cancel") { dialog, id ->
                     dialog.dismiss()
-
-                    // User cancelled the dialog.
                 }
             // Create the AlertDialog object and return it.
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
     }
+
+    fun setCameraSetupDialogListener(listener: CameraSetupDialogListener) {
+        this.listener = listener
+    }
 }
 
 
-class ItemFragment : Fragment() {
+class ItemFragment : Fragment(), SetupCameraDialogFragment.CameraSetupDialogListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -58,8 +54,27 @@ class ItemFragment : Fragment() {
     }
 
     private fun showCameraSetupDialog() {
-//        val dialog = SetupCameraDialogFragment()
-//        dialog.show(parentFragmentManager, "Setup Camera Dialog Fragment")
+        val dialogFragment = SetupCameraDialogFragment()
+        dialogFragment.setCameraSetupDialogListener(this)
+        dialogFragment.show(parentFragmentManager, "Setup Camera Dialog Fragment")
+    }
+
+    override fun onPositiveClick() {
+        val exerciseName = arguments?.getString("exerciseName").toString()
+        val uri = arguments?.getString("uri").toString()
+        val dataUri = arguments?.getString("dataUri").toString()
+        val pairList = arguments?.getString("pairs").toString()
+        val imageResID = arguments?.getString("imageResID")?.toInt()
+
+        Log.i("URI", uri)
+
+        Intent(context, VideoCameraActivity::class.java).also {
+            it.putExtra("uri", uri)
+            it.putExtra("dataUri", dataUri)
+            it.putExtra("pairList", pairList)
+            it.putExtra("exerciseName", exerciseName)
+            startActivity(it)
+        }
     }
 
     override fun onCreateView(
@@ -86,16 +101,16 @@ class ItemFragment : Fragment() {
 
         view.setOnClickListener {
             showCameraSetupDialog()
-
-            Log.i("URI", uri)
-
-            Intent(context, VideoCameraActivity::class.java).also {
-                it.putExtra("uri", uri)
-                it.putExtra("dataUri", dataUri)
-                it.putExtra("pairList", pairList)
-                it.putExtra("exerciseName", exerciseName)
-                startActivity(it)
-            }
+//
+//            Log.i("URI", uri)
+//
+//            Intent(context, VideoCameraActivity::class.java).also {
+//                it.putExtra("uri", uri)
+//                it.putExtra("dataUri", dataUri)
+//                it.putExtra("pairList", pairList)
+//                it.putExtra("exerciseName", exerciseName)
+//                startActivity(it)
+//            }
         }
 
         return view

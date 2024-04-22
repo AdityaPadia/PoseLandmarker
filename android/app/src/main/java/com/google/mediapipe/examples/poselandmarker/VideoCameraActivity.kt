@@ -77,18 +77,10 @@ class VideoCameraActivity : AppCompatActivity(), DataTransfer, SyncInterface, Mi
         galleryFragment.playVideo()
     }
 
-    private fun showCameraSetupDialog() {
-        val dialog = SetupCameraDialogFragment()
-        dialog.show(supportFragmentManager, "Setup Camera Dialog Fragment")
-    }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video_camera)
-
-        //Show Camera Setup Dialog
-        showCameraSetupDialog()
 
         val args = intent.extras
         if (args != null) {
