@@ -58,6 +58,9 @@ class HomeActivity : AppCompatActivity() {
         val bundle2 = Bundle()
         val bundle3 = Bundle()
         val bundle4 = Bundle()
+        val bundle5 = Bundle()
+        val bundle6 = Bundle()
+        val bundle7 = Bundle()
 
         val exercise1 = Exercise(
             1,
@@ -126,6 +129,58 @@ class HomeActivity : AppCompatActivity() {
             null
         )
 
+        val exercise5 = Exercise(
+            5,
+            "Neural Glide Median Bias",
+            "Targeted neural mobilization for median nerve",
+            "android.resource://$packageName/${R.raw.neural_glide_median_bias}",
+            "neuralGlideMedianBias.txt",
+            R.raw.arms,
+            listOf(
+                Pair(12, 14),
+                Pair(14, 16),
+                Pair(16, 22),
+                Pair(16, 20),
+            ),
+            null
+        )
+
+        val exercise6 = Exercise(
+            6,
+            "Neural Glide Median Bias and Head Tilt",
+            "Targeted neural mobilization for median nerve",
+            "android.resource://$packageName/${R.raw.neural_glide_with_ulnar_bias_and_head_tilt}",
+            "neuralGlideMedianBiasAndHeadTilt.txt",
+            R.raw.arms,
+            listOf(
+                Pair(12, 14),
+                Pair(14, 16),
+                Pair(16, 22),
+                Pair(16, 20),
+                Pair(0, 2),
+                Pair(2, 7),
+                Pair(0, 5),
+                Pair(5, 8),
+            ),
+            null
+        )
+
+        val exercise7 = Exercise(
+            7,
+            "Shoulder Flexion with Opposite Arm Isometric Hold",
+            "Strengthening shoulder stabilizers with isometric contractions",
+            "android.resource://$packageName/${R.raw.shoulder_flexion_with_opposite_arm_isometric_hold}",
+            "shoulderFlexionWithOppositeArm.txt",
+            R.raw.shoulders,
+            listOf(
+                Pair(12, 14),
+                Pair(11, 13),
+                Pair(13, 15),
+                Pair(14, 16)
+            ),
+            null
+        )
+
         fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
 
 
@@ -176,16 +231,39 @@ class HomeActivity : AppCompatActivity() {
         fragment4.arguments = bundle4
         fragmentTransaction.add(R.id.fragmentContainer, fragment4)
 
-        bundle4.putString("exerciseName", exercise4.name)
-        bundle4.putString("exerciseDescription", exercise4.description)
-        bundle4.putString("uri", exercise4.uri)
-        bundle4.putString("dataUri", exercise4.dataUri)
-        bundle4.putString("pairs", exercise4.pairs.toString())
-        bundle4.putString("imageResID", exercise4.resID.toString())
+        bundle5.putString("exerciseName", exercise5.name)
+        bundle5.putString("exerciseDescription", exercise5.description)
+        bundle5.putString("uri", exercise5.uri)
+        bundle5.putString("dataUri", exercise5.dataUri)
+        bundle5.putString("pairs", exercise5.pairs.toString())
+        bundle5.putString("imageResID", exercise5.resID.toString())
 
         val fragment5 = ItemFragment()
-        fragment5.arguments = bundle4
+        fragment5.arguments = bundle5
         fragmentTransaction.add(R.id.fragmentContainer, fragment5)
+
+        bundle6.putString("exerciseName", exercise6.name)
+        bundle6.putString("exerciseDescription", exercise6.description)
+        bundle6.putString("uri", exercise6.uri)
+        bundle6.putString("dataUri", exercise6.dataUri)
+        bundle6.putString("pairs", exercise6.pairs.toString())
+        bundle6.putString("imageResID", exercise6.resID.toString())
+
+        val fragment6 = ItemFragment()
+        fragment6.arguments = bundle6
+        fragmentTransaction.add(R.id.fragmentContainer, fragment6)
+
+        bundle7.putString("exerciseName", exercise7.name)
+        bundle7.putString("exerciseDescription", exercise7.description)
+        bundle7.putString("uri", exercise7.uri)
+        bundle7.putString("dataUri", exercise7.dataUri)
+        bundle7.putString("pairs", exercise7.pairs.toString())
+        bundle7.putString("imageResID", exercise7.resID.toString())
+
+        val fragment7 = ItemFragment()
+        fragment7.arguments = bundle7
+        fragmentTransaction.add(R.id.fragmentContainer, fragment7)
+
 
         fragmentTransaction.commit()
     }

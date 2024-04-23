@@ -215,7 +215,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
 
                 Log.i("getThisUserExercise", barEntries.toString())
-                val barDataSet =  BarDataSet(barEntries)
+                val barDataSet =  BarDataSet(barEntries, "Performance")
                 barDataSet.setDrawValues(false)
                 barChart.data = BarData(barDataSet)
                 barChart.animateY(1000)

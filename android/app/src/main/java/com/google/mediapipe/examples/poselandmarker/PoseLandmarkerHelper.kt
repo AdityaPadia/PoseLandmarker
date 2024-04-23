@@ -684,11 +684,13 @@ class PoseLandmarkerHelper(
         )
     }
 
-    fun longLog(str: String) {
+    private fun longLog(str: String) {
         if (str.length > 1000) {
             Log.d("jsonCustomResultBundle", str.substring(0, 1000))
             longLog(str.substring(1000))
-        } else Log.d("jsonCustomResultBundle", str)
+        } else {
+            Log.d("jsonCustomResultBundle", str)
+        }
     }
 
     companion object {
