@@ -684,6 +684,7 @@ class PoseLandmarkerHelper(
         )
     }
 
+    // Logging function to print out strings > 1000 characters long
     private fun longLog(str: String) {
         if (str.length > 1000) {
             Log.d("jsonCustomResultBundle", str.substring(0, 1000))
@@ -716,6 +717,7 @@ class PoseLandmarkerHelper(
         val inputImageWidth: Int,
     )
 
+    //Custom Data Class to store
     data class CustomResultBundle(
         val results: List<CustomPoseLandmarkerResult>,
         val inferenceTime: Long,

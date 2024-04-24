@@ -50,8 +50,6 @@ class ProfileActivity : AppCompatActivity() {
             }
 
 
-
-
             //Go to Main Activity
             Intent(this, MainActivity::class.java).also {
                 startActivity(it)

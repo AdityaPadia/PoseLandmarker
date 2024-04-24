@@ -170,7 +170,7 @@ class HomeActivity : AppCompatActivity() {
             "Shoulder Flexion with Opposite Arm Isometric Hold",
             "Strengthening shoulder stabilizers with isometric contractions",
             "android.resource://$packageName/${R.raw.shoulder_flexion_with_opposite_arm_isometric_hold}",
-            "shoulderFlexionWithOppositeArm.txt",
+            "shoulderFlexion.txt",
             R.raw.shoulders,
             listOf(
                 Pair(12, 14),
