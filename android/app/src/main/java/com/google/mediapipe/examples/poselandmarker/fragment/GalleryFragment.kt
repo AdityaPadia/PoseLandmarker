@@ -137,9 +137,9 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         getVideoDataFromFirestore(dataUri)
 
-        fragmentGalleryBinding.fabGetContent.setOnClickListener {
-            getContent.launch(arrayOf("image/*", "video/*"))
-        }
+//        fragmentGalleryBinding.fabGetContent.setOnClickListener {
+//            getContent.launch(arrayOf("image/*", "video/*"))
+//        }
     }
 
     private fun getVideoDataFromFirestore(dataUri: String) {
@@ -186,8 +186,6 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     else {
                         Log.i("getVideoDataFromFirestore", "Could not getCustomResultBundle")
                     }
-
-
 
                     poseLandmarkerHelper.clearPoseLandmarker()
                 }).addOnFailureListener(OnFailureListener {
@@ -493,6 +491,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             poseLandmarkerHelper.detectVideoFile(Uri.parse(mediaUri), VIDEO_INTERVAL_MS)
                 ?.let { resultBundle ->
                     detectionComplete = true
+                    //TODO : Log the detection results
                     activity?.runOnUiThread { displayVideoResult(resultBundle) }
                 }
                 ?: run { Log.e(TAG, "Error running pose landmarker.") }
